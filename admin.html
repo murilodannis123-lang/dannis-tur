@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Área Danni's · Renovações 2027</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#712473">
+<link rel="icon" href="icone.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,600;0,800;1,700;1,800;1,900&family=Figtree:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="estilo.css">
+<style>
+body{margin:0}
+.pg{max-width:1080px;margin:0 auto;padding-block:18px 48px;display:grid;gap:16px}
+.topo{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.topo img{width:150px;height:auto}
+.topo h1{font-size:22px;font-style:italic;color:var(--roxo)}
+.login{max-width:420px;margin:30px auto}
+.placar{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.num{background:#fff;border:1.5px solid var(--linha);border-radius:14px;padding:12px 14px;display:grid;gap:2px;text-align:left;cursor:pointer;font:inherit;color:inherit}
+.num[aria-pressed="true"]{border-color:var(--roxo);box-shadow:0 0 0 3px rgba(113,36,115,.15)}
+.num b{font-family:var(--f-display);font-size:32px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+.num span{font-size:13px;font-weight:700;color:var(--tinta-2)}
+.num.esp b{color:#b7550c}.num.lib b{color:#1677c9}.num.ass b{color:var(--ok)}
+.aniv{background:linear-gradient(135deg,#fff6d6,#ffe9f2);border:1.5px solid #f3d8a0;border-radius:16px;padding:14px 16px;display:grid;gap:10px}
+.aniv h3{font-size:19px}
+.aniv ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.aniv li{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;background:rgba(255,255,255,.7);border-radius:10px;padding:8px 10px}
+.aniv li.hoje{background:#fff;border:2px solid var(--laranja)}
+.aniv small{color:var(--tinta-2)}
+.busca{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.busca input{flex:1 1 220px;min-width:0}
+.lista{display:grid;gap:8px}
+.fam{display:grid;grid-template-columns:56px minmax(0,1fr) auto;gap:12px;align-items:center;background:#fff;border:1.5px solid var(--linha);border-radius:14px;padding:12px 14px;cursor:pointer;text-align:left;font:inherit;color:inherit}
+.fam:hover{border-color:var(--roxo)}
+.fam .n{font-family:var(--f-display);font-size:22px;font-weight:800;color:var(--tinta-2);font-variant-numeric:tabular-nums}
+.fam b{display:block;font-size:16px}
+.fam small{color:var(--tinta-2);font-size:13px;display:block}
+.pill{font-size:12px;font-weight:700;padding:4px 10px;border-radius:999px;white-space:nowrap}
+.pill.aguardando_valor{background:#fff1e0;color:#a5510b}
+.pill.liberado{background:#e6f0ff;color:#1d5bbf}
+.pill.vai_entregar_impresso{background:#efe6ff;color:#5b3fc4}
+.pill.assinado_online,.pill.recebido{background:#e3f6ea;color:var(--ok)}
+.pill.cancelado{background:#eee;color:#777}
+.vazio{text-align:center;color:var(--tinta-2);padding:30px 10px;border:1.5px dashed var(--linha);border-radius:14px}
+/* detalhe */
+.det{display:grid;grid-template-columns:minmax(0,380px) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:880px){.det{grid-template-columns:1fr}}
+.det .lado{display:grid;gap:12px}
+.folha{background:#fff;border:1px solid var(--linha);border-radius:14px;overflow:hidden}
+.info{font-size:14px;display:grid;gap:4px}
+.info b{font-weight:700}
+.grade2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btns{display:grid;gap:8px}
+.ok-msg{color:var(--ok);font-weight:700;font-size:14px;margin:0}
+</style>
+</head>
+<body>
+<div class="pg">
+  <header class="topo">
+    <img src="logo.png" alt="Danni's Tur" width="750" height="160">
+    <h1>Área Danni's · Renovações 2027</h1>
+  </header>
+
+  <!-- login -->
+  <form class="card login" id="fLogin" novalidate>
+    <h2 style="font-size:24px">Entrar</h2>
+    <div class="campo"><label for="senha">Senha do administrador</label><input type="password" id="senha" autocomplete="current-password"></div>
+    <p class="msg-err" id="loginErr" role="alert"></p>
+    <button class="btn btn-pri" type="submit">Entrar</button>
+  </form>
+
+  <!-- painel -->
+  <section id="painel" hidden style="display:grid;gap:16px">
+    <div class="placar" id="placar"></div>
+    <div class="aniv" id="aniv" hidden></div>
+    <div class="busca">
+      <input type="search" id="busca" placeholder="Buscar por nome, aluno, escola ou telefone">
+      <button class="btn btn-sec" type="button" id="atualizar">Atualizar</button>
+      <button class="btn btn-link" type="button" id="testeZap">Testar aviso no meu WhatsApp</button>
+    </div>
+    <p class="ok-msg" id="painelMsg" role="status"></p>
+    <div class="lista" id="lista"></div>
+  </section>
+
+  <!-- detalhe de uma família -->
+  <section id="detalhe" hidden style="display:grid;gap:14px">
+    <button class="btn btn-link" type="button" id="voltar" style="justify-self:start">← Voltar pra lista</button>
+    <div class="det">
+      <div class="lado">
+        <div class="card" style="gap:10px">
+          <div style="display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap">
+            <h2 id="dNome" style="font-size:22px"></h2><span class="pill" id="dPill"></span>
+          </div>
+          <div class="info" id="dInfo"></div>
+        </div>
+        <div class="card" style="gap:12px">
+          <h3 style="font-size:18px">Vigência e valor</h3>
+          <div class="grade2">
+            <div class="campo"><label for="xIni">Início</label><select id="xIni"></select></div>
+            <div class="campo"><label>Meses</label><input type="text" id="xMeses" disabled></div>
+            <div class="campo"><label for="xPv">Mensalidade (R$)</label><input type="text" id="xPv" inputmode="decimal" placeholder="0,00"></div>
+            <div class="campo"><label for="xParc">Parcelas</label><input type="number" id="xParc" min="1" max="12"></div>
+            <div class="campo"><label for="xTot">Valor total (R$)</label><input type="text" id="xTot" inputmode="decimal"></div>
+            <div class="campo"><label for="xData">Data do contrato</label><input type="date" id="xData"></div>
+          </div>
+          <div class="campo"><label for="xObs">Anotação interna <span class="opc">(só você vê)</span></label><textarea id="xObs" rows="2"></textarea></div>
+          <p class="msg-err" id="dErr" role="alert"></p>
+          <p class="ok-msg" id="dOk" role="status"></p>
+          <div class="btns">
+            <button class="btn btn-pri" type="button" id="bLiberar">Salvar e liberar pra assinatura</button>
+            <button class="btn btn-sec" type="button" id="bSalvar">Só salvar (não libera)</button>
+            <a class="btn btn-zap" id="bZap" href="#" target="_blank" rel="noopener" hidden>Avisar a família no WhatsApp</a>
+            <button class="btn btn-sec" type="button" id="bCopiar" hidden>Copiar link do contrato</button>
+            <a class="btn btn-sec" id="bArquivo" href="#" target="_blank" rel="noopener" hidden>Ver contrato assinado</a>
+            <button class="btn btn-sec" type="button" id="bImprimir">Imprimir contrato</button>
+            <button class="btn btn-link" type="button" id="bRecebido" hidden>Marcar contrato impresso como recebido</button>
+            <button class="btn btn-link" type="button" id="bCancelar">Cancelar esta renovação</button>
+          </div>
+        </div>
+      </div>
+      <div class="folha" id="dFolha"></div>
+    </div>
+  </section>
+</div>
+
+<div id="printArea"></div>
+
+<script src="comum.js"></script>
+<script>
+(function(){
+  const $ = s => document.querySelector(s);
+  const {api, API, esc, fmtData, brl, num, hojeISO, vigencia, nomeMes, INI, FIM, idade, zapLink, contratoHTML, preparaImpressao} = DT;
+  const ss = {get(k){try{return sessionStorage.getItem(k)}catch(e){return null}}, set(k,v){try{sessionStorage.setItem(k,v)}catch(e){}}};
+  const NOMES = {aguardando_valor:"Aguardando valor", liberado:"Liberado", vai_entregar_impresso:"Vai entregar impresso", assinado_online:"Assinado (gov.br)", recebido:"Recebido", cancelado:"Cancelado"};
+  let senha = ss.get("dt-senha") || "", familias = [], filtro = "todos", atual = null;
+
+  /* ---------- login ---------- */
+  $("#fLogin").addEventListener("submit", async e=>{
+    e.preventDefault(); senha = $("#senha").value; $("#loginErr").textContent = "";
+    if (!API){ $("#loginErr").textContent = "O servidor (planilha) ainda não foi ligado. Siga o passo a passo do LEIA-ME."; return; }
+    try{ await api("admin_login", {senha}); ss.set("dt-senha", senha); entrar(); }
+    catch(err){ $("#loginErr").textContent = err.codigo==="senha" ? "Senha errada." : (err.message || "Não consegui entrar."); }
+  });
+  async function entrar(){ $("#fLogin").hidden = true; $("#painel").hidden = false; await carregar(); }
+
+  async function carregar(){
+    $("#painelMsg").textContent = "Carregando…";
+    try{ const r = await api("admin_lista", {senha}); familias = r.familias.reverse(); $("#painelMsg").textContent = ""; desenha(); }
+    catch(e){ if (e.codigo==="senha"){ sair(); } else $("#painelMsg").textContent = "Não consegui carregar. Toque em Atualizar."; }
+  }
+  function sair(){ ss.set("dt-senha",""); $("#painel").hidden = true; $("#detalhe").hidden = true; $("#fLogin").hidden = false; }
+  $("#atualizar").onclick = carregar;
+  $("#testeZap").onclick = async ()=>{
+    $("#painelMsg").textContent = "Enviando teste…";
+    try{ const r = await api("admin_teste_zap", {senha}); $("#painelMsg").textContent = r.enviado ? "Teste enviado. Confira o seu WhatsApp." : "Não chegou no WhatsApp: falta colocar a chave do CallMeBot (veja o LEIA-ME). O aviso por e-mail foi enviado."; }
+    catch(e){ $("#painelMsg").textContent = e.message; }
+  };
+
+  /* ---------- painel ---------- */
+  const grupo = st => st==="aguardando_valor" ? "esp" : (st==="liberado"||st==="vai_entregar_impresso") ? "lib" : (st==="assinado_online"||st==="recebido") ? "ass" : "can";
+  function desenha(){
+    const ativos = familias.filter(f=>f.status!=="cancelado");
+    const c = {esp:0, lib:0, ass:0}; ativos.forEach(f=>c[grupo(f.status)]++);
+    const alunos = ativos.reduce((s,f)=>s+f.alunos.length,0);
+    const cards = [["todos","",ativos.length,"Renovações"],["esp","esp",c.esp,"Aguardando valor"],["lib","lib",c.lib,"Liberados"],["ass","ass",c.ass,"Assinados"],["alunos","",alunos,"Alunos"]];
+    $("#placar").innerHTML = cards.map(([k,cls,n,t])=>`<button type="button" class="num ${cls}" data-f="${k}" aria-pressed="${filtro===k}"><b>${n}</b><span>${t}</span></button>`).join("");
+    $("#placar").querySelectorAll(".num").forEach(b=>b.onclick=()=>{ filtro = b.dataset.f==="alunos" ? "todos" : b.dataset.f; desenha(); });
+    aniversarios(ativos);
+    const q = $("#busca").value.trim().toLowerCase();
+    const lista = familias.filter(f=>{
+      if (filtro==="todos" ? f.status==="cancelado" : grupo(f.status)!==filtro) return false;
+      if (!q) return true;
+      return [f.responsavel, f.celular, f.cpf, ...f.alunos.map(a=>a.nome+" "+a.escola)].join(" ").toLowerCase().includes(q);
+    });
+    $("#lista").innerHTML = lista.length ? lista.map(f=>`
+      <button type="button" class="fam" data-id="${f.id}">
+        <span class="n">${f.id}</span>
+        <span><b>${esc(f.responsavel)}</b><small>${f.alunos.map(a=>`${esc(a.nome)} · ${esc(a.escola)}`).join(" · ")}</small><small>${esc(f.celular)} · cadastro ${fmtData(f.dataCadastro)}${f.valores && num(f.valores.mensalidade) ? ` · R$ ${brl(num(f.valores.mensalidade))}/mês` : ""}</small></span>
+        <span class="pill ${f.status}">${NOMES[f.status]||f.status}</span>
+      </button>`).join("") : `<div class="vazio">${familias.length ? "Nada nesse filtro." : "Nenhuma renovação ainda. Quando um pai confirmar no site, ela aparece aqui e você recebe aviso no WhatsApp."}</div>`;
+    $("#lista").querySelectorAll(".fam").forEach(b=>b.onclick=()=>abrir(b.dataset.id));
+  }
+  $("#busca").oninput = desenha;
+
+  function aniversarios(ativos){
+    const hoje = new Date(); hoje.setHours(0,0,0,0);
+    const itens = [];
+    ativos.forEach(f=>f.alunos.forEach(a=>{
+      if (!a.nasc) return; const [y,m,d] = a.nasc.split("-").map(Number);
+      let prox = new Date(hoje.getFullYear(), m-1, d); if (prox < hoje) prox = new Date(hoje.getFullYear()+1, m-1, d);
+      const dias = Math.round((prox-hoje)/864e5); if (dias > 30) return;
+      itens.push({a, f, dias, faz: prox.getFullYear()-y, data:`${String(d).padStart(2,"0")}/${String(m).padStart(2,"0")}`});
+    }));
+    itens.sort((x,y)=>x.dias-y.dias);
+    $("#aniv").hidden = !itens.length; if (!itens.length) return;
+    $("#aniv").innerHTML = `<h3>🎂 Aniversariantes dos próximos 30 dias</h3><ul>${itens.map(i=>`
+      <li class="${i.dias===0?"hoje":""}"><span><b>${esc(i.a.nome)}</b> faz ${i.faz} ${i.dias===0?"<b>HOJE</b>":i.dias===1?"amanhã":`em ${i.data}`}<br><small>${esc(i.a.escola)} · ${esc(i.f.responsavel)}</small></span>
+      <a class="btn btn-zap" style="padding:8px 12px;font-size:14px" target="_blank" rel="noopener" href="${zapLink(i.f.celular, `Parabéns, ${i.a.nome.split(" ")[0]}! 🎉🎂 Feliz ${i.faz} ${i.faz===1?"ano":"anos"}! Um abraço de toda a turma da Danni's Tur. 🚐💜`)}">Mandar parabéns</a></li>`).join("")}</ul>`;
+  }
+
+  /* ---------- detalhe ---------- */
+  let ops = ""; for (let k=INI;k<=FIM;k++) ops += `<option value="${k}">${nomeMes(k)}</option>`; $("#xIni").innerHTML = ops;
+  const linkContrato = f => new URL("contrato.html?c="+encodeURIComponent(f.token), location.href).href;
+  function abrir(id){
+    atual = familias.find(f=>String(f.id)===String(id)); if (!atual) return;
+    $("#painel").hidden = true; $("#detalhe").hidden = false; window.scrollTo(0,0);
+    const f = atual, v = f.valores || {}, vg = vigencia(f.dataCadastro, v.ini);
+    $("#dNome").textContent = `${f.id} · ${f.responsavel}`;
+    $("#dInfo").innerHTML = `
+      <span><b>CPF</b> ${esc(f.cpf)} · <b>RG</b> ${esc(f.rg)}</span>
+      <span><b>Celular</b> ${esc(f.celular)}${f.foneCasa?` · <b>casa</b> ${esc(f.foneCasa)}`:""}${f.outroFone?` · <b>outro</b> ${esc(f.outroFone)}`:""}</span>
+      ${f.email?`<span><b>E-mail</b> ${esc(f.email)}</span>`:""}
+      <span><b>Endereço</b> ${esc(f.rua)} – ${esc(f.bairro)} – ${esc(f.cidade)} – ${esc(f.cep)}</span>
+      ${f.alunos.map(a=>`<span><b>${esc(a.nome)}</b> · ${fmtData(a.nasc)} (${idade(a.nasc)} anos) · ${esc(a.escola)} · ${esc(a.periodo)} · ${esc(a.trajeto)}</span>`).join("")}
+      ${f.obs?`<span><b>Obs. da família</b> ${esc(f.obs)}</span>`:""}
+      <span><b>Cadastro</b> ${fmtData(f.dataCadastro)}${f.liberadoEm?` · <b>liberado</b> ${fmtData(f.liberadoEm)}`:""}${f.assinadoEm?` · <b>assinado</b> ${fmtData(f.assinadoEm)}`:""}</span>`;
+    $("#xIni").value = vg.ini; $("#xMeses").value = vg.meses;
+    $("#xPv").value = num(v.mensalidade) ? brl(num(v.mensalidade)) : "";
+    $("#xParc").value = v.parcelas || vg.meses;
+    $("#xTot").value = num(v.total) ? brl(num(v.total)) : ""; $("#xTot").dataset.manual = num(v.total) && num(v.total)!==num(v.mensalidade)*(+v.parcelas||0) ? "1" : "";
+    $("#xData").value = v.dataContrato || hojeISO();
+    $("#xObs").value = f.obsInterna || "";
+    $("#dErr").textContent = ""; $("#dOk").textContent = "";
+    estado(); previa();
+  }
+  function estado(){
+    const f = atual, lib = f.status!=="aguardando_valor" && f.status!=="cancelado";
+    $("#dPill").className = "pill " + f.status; $("#dPill").textContent = NOMES[f.status] || f.status;
+    $("#bLiberar").textContent = lib ? "Salvar alterações" : "Salvar e liberar pra assinatura";
+    $("#bSalvar").hidden = lib;
+    $("#bZap").hidden = !lib; $("#bCopiar").hidden = !lib;
+    $("#bArquivo").hidden = !f.arquivo; if (f.arquivo) $("#bArquivo").href = f.arquivo;
+    $("#bRecebido").hidden = !(f.status==="vai_entregar_impresso" || f.status==="liberado");
+    $("#bCancelar").textContent = f.status==="cancelado" ? "Reativar esta renovação" : "Cancelar esta renovação";
+    if (lib) $("#bZap").href = zapLink(f.celular, `Olá, ${f.responsavel.split(" ")[0]}! 🚐 Seu contrato do transporte escolar 2027 da Danni's Tur está pronto.\n\nAbra o link pra conferir, imprimir ou assinar pelo gov.br:\n${linkContrato(f)}\n\nQualquer dúvida é só chamar. VEM COM A GENTE!`);
+  }
+  function valores(){
+    const pv = num($("#xPv").value), n = +$("#xParc").value || 0;
+    return {ini:+$("#xIni").value, mensalidade:pv, parcelas:n, total: num($("#xTot").value) || pv*n, dataContrato:$("#xData").value, obsInterna:$("#xObs").value.trim()};
+  }
+  function previa(){ $("#dFolha").innerHTML = contratoHTML(atual, valores()); }
+  const recalc = ()=>{ const pv=num($("#xPv").value), n=+$("#xParc").value; if (pv && n && !$("#xTot").dataset.manual) $("#xTot").value = brl(pv*n); previa(); };
+  $("#xIni").onchange = ()=>{ const vg = vigencia(null, +$("#xIni").value); $("#xMeses").value = vg.meses; $("#xParc").value = vg.meses; recalc(); };
+  $("#xPv").oninput = recalc; $("#xParc").oninput = recalc; $("#xData").oninput = previa;
+  $("#xTot").oninput = e=>{ e.target.dataset.manual = e.target.value ? "1" : ""; previa(); };
+
+  async function salvar(liberar){
+    $("#dErr").textContent = ""; $("#dOk").textContent = "Salvando…";
+    try{
+      const r = await api("admin_salvar", {senha, id:atual.id, valores:valores(), liberar});
+      Object.assign(atual, r.familia); const i = familias.findIndex(f=>f.id===atual.id); if (i>=0) familias[i] = atual;
+      estado(); previa();
+      $("#dOk").textContent = liberar ? "Liberado! Agora toque em 'Avisar a família no WhatsApp'." : "Salvo.";
+    }catch(e){ $("#dOk").textContent = ""; $("#dErr").textContent = e.message; }
+  }
+  $("#bLiberar").onclick = ()=>salvar(atual.status==="aguardando_valor" ? true : false);
+  $("#bSalvar").onclick = ()=>salvar(false);
+  $("#bCopiar").onclick = async ()=>{ try{ await navigator.clipboard.writeText(linkContrato(atual)); $("#dOk").textContent = "Link copiado."; }catch(e){ $("#dOk").textContent = linkContrato(atual); } };
+  $("#bImprimir").onclick = ()=>{ preparaImpressao(contratoHTML(atual, valores())); window.print(); };
+  async function mudaStatus(st){
+    try{ const r = await api("admin_status", {senha, id:atual.id, status:st}); Object.assign(atual, r.familia); estado(); $("#dOk").textContent = "Atualizado."; }
+    catch(e){ $("#dErr").textContent = e.message; }
+  }
+  $("#bRecebido").onclick = ()=>mudaStatus("recebido");
+  $("#bCancelar").onclick = ()=>{
+    if (atual.status==="cancelado") return mudaStatus("aguardando_valor");
+    if ($("#bCancelar").dataset.conf!=="1"){ $("#bCancelar").dataset.conf="1"; $("#bCancelar").textContent = "Toque de novo pra confirmar o cancelamento"; setTimeout(()=>{ $("#bCancelar").dataset.conf=""; estado(); }, 4000); return; }
+    $("#bCancelar").dataset.conf=""; mudaStatus("cancelado");
+  };
+  $("#voltar").onclick = ()=>{ $("#detalhe").hidden = true; $("#painel").hidden = false; desenha(); };
+
+  if (senha && API) entrar().catch(sair);
+})();
+</script>
+</body>
+</html>

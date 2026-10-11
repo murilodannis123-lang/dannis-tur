@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Meu contrato 2027 · Danni's Tur</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#712473">
+<link rel="icon" href="icone.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,600;0,800;1,700;1,800;1,900&family=Figtree:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="estilo.css">
+<style>
+body{margin:0}
+.pg{max-width:860px;margin:0 auto;padding-block:20px 48px;display:grid;gap:16px}
+.topo{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.topo img{width:170px;height:auto}
+.folha{background:#fff;border:1px solid var(--linha);border-radius:14px;overflow:hidden}
+.passo{display:grid;gap:10px}
+.passo h3{font-size:20px}
+.opcoes{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+.opcao{border:1.5px solid var(--linha);border-radius:14px;padding:16px;display:grid;gap:10px;align-content:start;background:#fff}
+.opcao h4{margin:0;font-family:var(--f-display);font-size:19px;color:var(--roxo)}
+.opcao p,.opcao ol{margin:0;font-size:15px}
+.opcao ol{padding-left:20px;display:grid;gap:4px}
+input[type=file]{width:100%;font-size:14px}
+.st-chip{font-size:13px;font-weight:700;padding:6px 12px;border-radius:999px;background:var(--roxo-claro);color:var(--roxo)}
+</style>
+</head>
+<body>
+<div class="pg">
+  <header class="topo">
+    <img src="logo.png" alt="Danni's Tur" width="750" height="160">
+    <span class="st-chip" id="chipSt">Contrato 2027</span>
+  </header>
+
+  <div id="carregando" class="aviso-box espera">Carregando seu contrato…</div>
+  <div id="erro" class="aviso-box erro" hidden></div>
+
+  <section id="conteudo" hidden style="display:grid;gap:16px">
+    <div class="titulo-sec">
+      <small>Ano letivo 2027</small>
+      <h2 id="ola">Seu contrato</h2>
+    </div>
+
+    <div id="stEspera" class="aviso-box espera" hidden>
+      <b>Aguardando a Danni's Tur colocar o valor.</b>
+      <span>Assim que o contrato for liberado você recebe o aviso no WhatsApp e, por este mesmo link, pode imprimir ou assinar pelo gov.br.</span>
+    </div>
+    <div id="stAssinado" class="aviso-box ok" hidden><b>Recebemos o seu contrato assinado. Obrigado e bora pra 2027!</b></div>
+    <div id="stImpresso" class="aviso-box ok" hidden><b>Combinado! Imprima, assine e entregue o contrato na van.</b><span>Se preferir, você ainda pode assinar pelo gov.br abaixo.</span></div>
+
+    <div class="card passo" id="assinar" hidden>
+      <h3>Como você quer assinar?</h3>
+      <div class="opcoes">
+        <div class="opcao">
+          <h4>Imprimir e assinar</h4>
+          <p>Imprima as duas páginas, assine e entregue na van.</p>
+          <button class="btn btn-pri" type="button" id="btnImprimir">Imprimir contrato</button>
+        </div>
+        <div class="opcao">
+          <h4>Assinar pelo gov.br</h4>
+          <ol>
+            <li>Toque em <b>Salvar PDF</b> (na tela de impressão, escolha "Salvar como PDF").</li>
+            <li>Entre em <a href="https://assinador.iti.br" target="_blank" rel="noopener">assinador.iti.br</a> com a sua conta gov.br (nível prata ou ouro).</li>
+            <li>Envie o PDF, posicione a assinatura e baixe o arquivo assinado.</li>
+            <li>Mande o arquivo assinado aqui embaixo.</li>
+          </ol>
+          <button class="btn btn-sec" type="button" id="btnPdf">Salvar PDF</button>
+          <label for="arq" style="font-weight:700;font-size:14px">Contrato assinado (PDF)</label>
+          <input type="file" id="arq" accept="application/pdf,image/*">
+          <button class="btn btn-pri" type="button" id="btnEnviar" disabled>Enviar contrato assinado</button>
+          <p class="msg-err" id="envErr" role="alert"></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="folha" id="folhaWrap"><div id="folha"></div></div>
+  </section>
+</div>
+
+<div id="printArea"><p style="font:16px Arial;padding:40px;text-align:center">Este contrato ainda não foi liberado para impressão pela Danni's Tur.</p></div>
+
+<script src="comum.js"></script>
+<script>
+(function(){
+  const $ = s => document.querySelector(s);
+  const {api, contratoHTML, esc, preparaImpressao} = DT;
+  const token = new URLSearchParams(location.search).get("c") || "";
+  let fam = null, liberado = false;
+
+  async function carregar(){
+    if (!token){ falha("Link incompleto. Abra o link que a Danni's Tur te mandou no WhatsApp."); return; }
+    try{
+      const r = await api("ver", {token});
+      fam = r.familia; liberado = r.liberado; mostra();
+    }catch(e){
+      falha(e.codigo==="sem_api" ? "O sistema de contratos ainda está sendo ligado. Tente mais tarde." : (e.codigo==="token" ? e.message : "Não consegui abrir o contrato agora. Confira a internet e recarregue a página."));
+    }
+  }
+  function falha(t){ $("#carregando").hidden = true; $("#erro").hidden = false; $("#erro").textContent = t; }
+
+  function mostra(){
+    $("#carregando").hidden = true; $("#conteudo").hidden = false;
+    $("#ola").textContent = `Contrato de ${fam.responsavel.split(" ")[0]}`;
+    const st = fam.status;
+    $("#stEspera").hidden = liberado;
+    $("#stAssinado").hidden = !(st==="assinado_online" || st==="recebido");
+    $("#stImpresso").hidden = st!=="vai_entregar_impresso";
+    $("#assinar").hidden = !liberado || st==="assinado_online" || st==="recebido";
+    $("#chipSt").textContent = !liberado ? "Aguardando valor" : (st==="assinado_online"||st==="recebido" ? "Assinado" : "Liberado pra assinar");
+    $("#folha").innerHTML = contratoHTML(fam, liberado ? fam.valores : {});
+    $("#folhaWrap").classList.toggle("marca-dagua", !liberado);
+    $("#folhaWrap").dataset.marca = "AGUARDANDO LIBERAÇÃO";
+    if (liberado) preparaImpressao(contratoHTML(fam, fam.valores));
+  }
+
+  async function imprimir(){
+    if (!liberado) return;
+    try{ if (fam.status==="liberado"){ await api("vou_imprimir", {token}); fam.status="vai_entregar_impresso"; mostra(); } }catch(e){}
+    window.print();
+  }
+  $("#btnImprimir").onclick = imprimir;
+  $("#btnPdf").onclick = ()=>{ if (liberado) window.print(); };
+  window.addEventListener("beforeprint", ()=>{ if (!liberado) preparaImpressao('<p style="font:16px Arial;padding:40px;text-align:center">Este contrato ainda não foi liberado para impressão pela Danni\'s Tur.</p>'); });
+
+  $("#arq").onchange = ()=>{ $("#btnEnviar").disabled = !$("#arq").files.length; $("#envErr").textContent=""; };
+  $("#btnEnviar").onclick = async ()=>{
+    const f = $("#arq").files[0]; if (!f) return;
+    if (f.size > 10*1024*1024){ $("#envErr").textContent = "Arquivo muito grande (máximo 10 MB)."; return; }
+    const b = $("#btnEnviar"); b.disabled = true; b.textContent = "Enviando…";
+    try{
+      const base64 = await new Promise((ok,err)=>{ const r = new FileReader(); r.onload = ()=>ok(String(r.result).split(",")[1]); r.onerror = err; r.readAsDataURL(f); });
+      await api("enviar_assinado", {token, base64, tipo:f.type || "application/pdf"});
+      fam.status = "assinado_online"; mostra(); window.scrollTo({top:0,behavior:"smooth"});
+    }catch(e){ $("#envErr").textContent = e.message || "Não consegui enviar. Tente de novo."; }
+    b.disabled = false; b.textContent = "Enviar contrato assinado";
+  };
+
+  carregar();
+})();
+</script>
+</body>
+</html>

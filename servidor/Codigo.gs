@@ -1,0 +1,236 @@
+/**
+ * Danni's Tur · servidor da renovação 2027 (Google Apps Script)
+ *
+ * Guarda os cadastros numa planilha Google, entrega o contrato de cada família por um link próprio,
+ * deixa a Danni's Tur colocar valor e liberar o contrato, recebe o contrato assinado e avisa
+ * aniversariantes e novidades no WhatsApp do dono (via CallMeBot, grátis, só pro próprio número).
+ *
+ * Como instalar: veja o arquivo LEIA-ME.md nesta mesma pasta.
+ */
+
+const ABA = "Renovações";
+const COLS = ["id","token","criado_em","status","responsavel","cpf","rg","celular","fone_casa","outro_fone","email",
+              "rua","bairro","cidade","cep","alunos_texto","alunos_json","obs","data_cadastro",
+              "inicio_idx","mensalidade","parcelas","total","data_contrato","liberado_em","assinado_em","arquivo_url","observacao_interna"];
+const STATUS = {AGUARDANDO:"aguardando_valor", LIBERADO:"liberado", ASSINADO:"assinado_online", IMPRESSO:"vai_entregar_impresso", RECEBIDO:"recebido", CANCELADO:"cancelado"};
+const FUSO = "America/Sao_Paulo";
+
+/* ===================== entrada ===================== */
+function doGet(){ return json_({ok:true, servico:"Danni's Tur 2027"}); }
+
+function doPost(e){
+  let req;
+  try { req = JSON.parse(e.postData.contents); } catch(err){ return json_({ok:false, erro:"Pedido inválido"}); }
+  try {
+    switch (req.acao){
+      case "cadastrar":        return json_(cadastrar_(req.dados));
+      case "ver":              return json_(ver_(req.token));
+      case "enviar_assinado":  return json_(enviarAssinado_(req));
+      case "vou_imprimir":     return json_(vouImprimir_(req.token));
+      case "admin_login":      admin_(req); return json_({ok:true});
+      case "admin_lista":      admin_(req); return json_(lista_());
+      case "admin_salvar":     admin_(req); return json_(salvar_(req));
+      case "admin_status":     admin_(req); return json_(mudaStatus_(req));
+      case "admin_teste_zap":  admin_(req); return json_({ok:true, enviado: avisaDono_("✅ Teste: os avisos da Danni's Tur estão chegando no seu WhatsApp.")});
+      default:                 return json_({ok:false, erro:"Ação desconhecida"});
+    }
+  } catch(err){
+    return json_({ok:false, erro: String(err && err.message || err), codigo: err && err.codigo});
+  }
+}
+
+/* ===================== famílias ===================== */
+function cadastrar_(d){
+  if (!d || !d.responsavel || !d.cpf || !Array.isArray(d.alunos) || !d.alunos.length) throw erro_("Dados incompletos");
+  const lock = LockService.getScriptLock(); lock.waitLock(20000);
+  try {
+    const sh = aba_();
+    const id = proximoId_(sh);
+    const token = "t" + Utilities.getUuid().replace(/-/g,"") + Utilities.getUuid().replace(/-/g,"").slice(0,8);
+    const alunos = d.alunos.slice(0,8).map(a => ({nome:limpa_(a.nome,80), nasc:limpa_(a.nasc,10), escola:limpa_(a.escola,60), periodo:limpa_(a.periodo,20), trajeto:limpa_(a.trajeto,20)}));
+    const linha = {
+      id, token, criado_em:agora_(), status:STATUS.AGUARDANDO,
+      responsavel:limpa_(d.responsavel,100), cpf:limpa_(d.cpf,14), rg:limpa_(d.rg,20), celular:limpa_(d.celular,20),
+      fone_casa:limpa_(d.foneCasa,20), outro_fone:limpa_(d.outroFone,40), email:limpa_(d.email,80),
+      rua:limpa_(d.rua,120), bairro:limpa_(d.bairro,60), cidade:limpa_(d.cidade,60), cep:limpa_(d.cep,9),
+      alunos_texto: alunos.map(a => `${a.nome} (${fmt_(a.nasc)}) – ${a.escola} – ${a.periodo} – ${a.trajeto}`).join("\n"),
+      alunos_json: JSON.stringify(alunos), obs:limpa_(d.obs,500), data_cadastro: hoje_()
+    };
+    sh.appendRow(COLS.map(c => linha[c] == null ? "" : linha[c]));
+    avisaDono_(`🚐 *Nova renovação 2027* (nº ${id})\n${linha.responsavel} – ${linha.celular}\n${alunos.map(a=>`• ${a.nome} – ${a.escola}`).join("\n")}\n\nAbra a Área Danni's pra colocar o valor.`);
+    return {ok:true, token, id};
+  } finally { lock.releaseLock(); }
+}
+
+function ver_(token){
+  const r = porToken_(token);
+  if (!r) throw erro_("Link inválido. Confira o link que a Danni's Tur te mandou.", "token");
+  const f = publico_(r.obj);
+  const liberado = [STATUS.LIBERADO, STATUS.ASSINADO, STATUS.IMPRESSO, STATUS.RECEBIDO].indexOf(r.obj.status) >= 0;
+  if (!liberado){ delete f.valores; }
+  return {ok:true, familia:f, liberado};
+}
+
+function enviarAssinado_(req){
+  const r = porToken_(req.token);
+  if (!r) throw erro_("Link inválido.", "token");
+  if (r.obj.status === STATUS.AGUARDANDO) throw erro_("O contrato ainda não foi liberado.");
+  if (!req.base64 || String(req.base64).length > 14e6) throw erro_("Arquivo muito grande (máximo 10 MB).");
+  const tipo = /^(application\/pdf|image\/(jpeg|png|heic|webp))$/.test(req.tipo) ? req.tipo : "application/pdf";
+  const blob = Utilities.newBlob(Utilities.base64Decode(req.base64), tipo, `Contrato 2027 - ${r.obj.id} - ${r.obj.responsavel}${tipo==="application/pdf"?".pdf":""}`);
+  const arq = pasta_().createFile(blob);
+  atualiza_(r.linha, {status:STATUS.ASSINADO, assinado_em:agora_(), arquivo_url:arq.getUrl()});
+  avisaDono_(`✍️ *Contrato assinado recebido* (nº ${r.obj.id})\n${r.obj.responsavel}\nO arquivo está na pasta "Danni's Tur – Contratos assinados" do seu Google Drive.`);
+  return {ok:true};
+}
+
+function vouImprimir_(token){
+  const r = porToken_(token);
+  if (!r) throw erro_("Link inválido.", "token");
+  if (r.obj.status === STATUS.AGUARDANDO) throw erro_("O contrato ainda não foi liberado.");
+  if (r.obj.status === STATUS.LIBERADO){
+    atualiza_(r.linha, {status:STATUS.IMPRESSO});
+    avisaDono_(`🖨️ ${r.obj.responsavel} (nº ${r.obj.id}) vai imprimir, assinar e entregar o contrato na van.`);
+  }
+  return {ok:true};
+}
+
+/* ===================== administração ===================== */
+function admin_(req){
+  const senha = PropertiesService.getScriptProperties().getProperty("SENHA_ADMIN");
+  if (!senha) throw erro_("Senha do administrador não configurada. Rode a função configurar().");
+  if (String(req.senha||"") !== senha){ Utilities.sleep(1200); throw erro_("Senha errada.", "senha"); }
+}
+
+function lista_(){
+  const sh = aba_(), vals = sh.getDataRange().getValues(); vals.shift();
+  const familias = vals.filter(l => l[0] !== "").map(l => completo_(obj_(l)));
+  return {ok:true, familias, hoje: hoje_()};
+}
+
+function salvar_(req){
+  const lock = LockService.getScriptLock(); lock.waitLock(20000);
+  try {
+    const r = porId_(req.id); if (!r) throw erro_("Cadastro não encontrado.");
+    const v = req.valores || {};
+    const mud = {inicio_idx: v.ini, mensalidade: v.mensalidade, parcelas: v.parcelas, total: v.total, data_contrato: v.dataContrato || hoje_(),
+                 observacao_interna: limpa_(v.obsInterna, 500)};
+    if (req.liberar){
+      if (!(Number(v.mensalidade) > 0) || !(Number(v.parcelas) > 0)) throw erro_("Coloque a mensalidade e o número de parcelas antes de liberar.");
+      if (r.obj.status === STATUS.AGUARDANDO) mud.status = STATUS.LIBERADO;
+      mud.liberado_em = agora_();
+    }
+    atualiza_(r.linha, mud);
+    return {ok:true, familia: completo_(porId_(req.id).obj)};
+  } finally { lock.releaseLock(); }
+}
+
+function mudaStatus_(req){
+  const r = porId_(req.id); if (!r) throw erro_("Cadastro não encontrado.");
+  const ok = Object.keys(STATUS).map(k => STATUS[k]); if (ok.indexOf(req.status) < 0) throw erro_("Status inválido.");
+  atualiza_(r.linha, {status:req.status});
+  return {ok:true, familia: completo_(porId_(req.id).obj)};
+}
+
+/* ===================== aniversários (gatilho diário) ===================== */
+function avisarAniversariantes(){
+  const agora = new Date();
+  const hoje = Utilities.formatDate(agora, FUSO, "MM-dd");
+  const amanha = Utilities.formatDate(new Date(agora.getTime() + 864e5), FUSO, "MM-dd");
+  const ano = Number(Utilities.formatDate(agora, FUSO, "yyyy"));
+  const vals = aba_().getDataRange().getValues(); vals.shift();
+  const hojeL = [], amanhaL = [];
+  vals.filter(l => l[0] !== "").map(obj_).forEach(f => {
+    if (f.status === STATUS.CANCELADO) return;
+    let alunos = []; try { alunos = JSON.parse(f.alunos_json || "[]"); } catch(e){}
+    alunos.forEach(a => {
+      if (!a.nasc) return;
+      const md = a.nasc.slice(5,10), anos = ano - Number(a.nasc.slice(0,4));
+      const t = `• *${a.nome}* faz ${anos} ${anos===1?"ano":"anos"} – ${a.escola}\n   Responsável: ${f.responsavel} ${f.celular}`;
+      if (md === hoje) hojeL.push(t); else if (md === amanha) amanhaL.push(t);
+    });
+  });
+  if (!hojeL.length && !amanhaL.length) return;
+  let msg = "";
+  if (hojeL.length) msg += `🎂 *Aniversariantes de hoje*\n${hojeL.join("\n")}\n\n`;
+  if (amanhaL.length) msg += `🎈 *Amanhã*\n${amanhaL.join("\n")}\n\n`;
+  msg += "Dá pra mandar os parabéns pela Área Danni's.";
+  avisaDono_(msg);
+}
+
+/* ===================== avisos ===================== */
+function avisaDono_(texto){
+  const p = PropertiesService.getScriptProperties();
+  const fone = p.getProperty("ZAP_DONO"), chave = p.getProperty("CALLMEBOT_CHAVE");
+  let enviado = false;
+  if (fone && chave){
+    try {
+      const url = "https://api.callmebot.com/whatsapp.php?phone=" + encodeURIComponent(fone) + "&text=" + encodeURIComponent(texto) + "&apikey=" + encodeURIComponent(chave);
+      const r = UrlFetchApp.fetch(url, {muteHttpExceptions:true});
+      enviado = r.getResponseCode() === 200;
+    } catch(e){}
+  }
+  const email = p.getProperty("EMAIL_AVISOS");
+  if (email){ try { MailApp.sendEmail(email, "Danni's Tur – aviso", texto.replace(/\*/g,"")); } catch(e){} }
+  return enviado;
+}
+
+/* ===================== instalação (rodar uma vez) ===================== */
+function configurar(){
+  const ss = SpreadsheetApp.getActive();
+  let sh = ss.getSheetByName(ABA);
+  if (!sh){ sh = ss.insertSheet(ABA); }
+  if (sh.getLastRow() === 0){
+    sh.getRange(1,1,1000,COLS.length).setNumberFormat("@");   // tudo como texto: CPF, telefone, CEP e datas não viram número
+    sh.getRange(1,1,1,COLS.length).setValues([COLS]); sh.setFrozenRows(1);
+    sh.getRange(1,1,1,COLS.length).setFontWeight("bold").setBackground("#712473").setFontColor("#ffffff");
+  }
+  const p = PropertiesService.getScriptProperties();
+  if (!p.getProperty("ZAP_DONO")) p.setProperty("ZAP_DONO", "+5519997781210");
+  if (!p.getProperty("EMAIL_AVISOS")) p.setProperty("EMAIL_AVISOS", Session.getEffectiveUser().getEmail());
+  if (!p.getProperty("SENHA_ADMIN")) p.setProperty("SENHA_ADMIN", "TROQUE-ESTA-SENHA");
+  ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === "avisarAniversariantes").forEach(t => ScriptApp.deleteTrigger(t));
+  ScriptApp.newTrigger("avisarAniversariantes").timeBased().atHour(7).everyDays(1).inTimezone(FUSO).create();
+  pasta_();
+  return "Pronto. Agora troque a senha em Configurações do projeto › Propriedades do script.";
+}
+
+/* ===================== utilidades ===================== */
+function aba_(){ const sh = SpreadsheetApp.getActive().getSheetByName(ABA); if (!sh) throw erro_("Rode configurar() primeiro."); return sh; }
+function pasta_(){
+  const nome = "Danni's Tur – Contratos assinados";
+  const it = DriveApp.getFoldersByName(nome);
+  return it.hasNext() ? it.next() : DriveApp.createFolder(nome);
+}
+function proximoId_(sh){ const n = sh.getLastRow(); if (n < 2) return 1; const ids = sh.getRange(2,1,n-1,1).getValues().map(r => Number(r[0])||0); return Math.max.apply(null, ids) + 1; }
+function obj_(l){ const o = {}; COLS.forEach((c,i) => o[c] = (l[i] instanceof Date) ? Utilities.formatDate(l[i], FUSO, "yyyy-MM-dd'T'HH:mm:ss") : l[i]); return o; }
+function porToken_(t){
+  if (!t || String(t).length < 20) return null;
+  const vals = aba_().getDataRange().getValues();
+  for (let i = 1; i < vals.length; i++) if (vals[i][1] === t) return {linha:i+1, obj:obj_(vals[i])};
+  return null;
+}
+function porId_(id){
+  const vals = aba_().getDataRange().getValues();
+  for (let i = 1; i < vals.length; i++) if (String(vals[i][0]) === String(id)) return {linha:i+1, obj:obj_(vals[i])};
+  return null;
+}
+function atualiza_(linha, mud){
+  const sh = aba_();
+  Object.keys(mud).forEach(k => { const c = COLS.indexOf(k); if (c >= 0 && mud[k] !== undefined) sh.getRange(linha, c+1).setValue(mud[k] == null ? "" : mud[k]); });
+}
+function publico_(o){
+  let alunos = []; try { alunos = JSON.parse(o.alunos_json || "[]"); } catch(e){}
+  return {
+    id:o.id, status:o.status, responsavel:o.responsavel, cpf:o.cpf, rg:o.rg, celular:o.celular, foneCasa:o.fone_casa, outroFone:o.outro_fone, email:o.email,
+    rua:o.rua, bairro:o.bairro, cidade:o.cidade, cep:o.cep, alunos, obs:o.obs, dataCadastro:String(o.data_cadastro||"").slice(0,10),
+    valores:{ini:o.inicio_idx, mensalidade:o.mensalidade, parcelas:o.parcelas, total:o.total, dataContrato:String(o.data_contrato||"").slice(0,10)}
+  };
+}
+function completo_(o){ const f = publico_(o); f.token = o.token; f.criadoEm = o.criado_em; f.liberadoEm = o.liberado_em; f.assinadoEm = o.assinado_em; f.arquivo = o.arquivo_url; f.obsInterna = o.observacao_interna; return f; }
+function limpa_(v, max){ return String(v == null ? "" : v).replace(/[\u0000-\u001f]/g," ").trim().slice(0, max||200); }
+function fmt_(iso){ return iso ? String(iso).split("-").reverse().join("/") : ""; }
+function agora_(){ return Utilities.formatDate(new Date(), FUSO, "yyyy-MM-dd'T'HH:mm:ss"); }
+function hoje_(){ return Utilities.formatDate(new Date(), FUSO, "yyyy-MM-dd"); }
+function erro_(m, codigo){ const e = new Error(m); e.codigo = codigo; return e; }
+function json_(o){ return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON); }
