@@ -199,6 +199,7 @@ input[type=text]:focus{outline:none;border-color:var(--roxo);box-shadow:0 0 0 3p
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script>
+  const da = v => /^Tio\b/.test(v.nome) ? "do" : "da";
 (function(){
   "use strict";
   /* ===== configuração ===== */
@@ -251,12 +252,12 @@ input[type=text]:focus{outline:none;border-color:var(--roxo);box-shadow:0 0 0 3p
   let sessao = null, vanEscolhida = null;
   VANS.forEach(v=>{
     const b = document.createElement("button"); b.type="button"; b.className="van-card";
-    b.innerHTML = `<div class="ic" style="background:${v.cor}1f"><img alt="" src="${VAN_URL}"></div><div><b>Van da ${v.nome}</b><small id="sub-${v.id}">Toque pra acompanhar</small></div><span class="chip">Ver</span>`;
+    b.innerHTML = `<div class="ic" style="background:${v.cor}1f"><img alt="" src="${VAN_URL}"></div><div><b>Van ${da(v)} ${v.nome}</b><small id="sub-${v.id}">Toque pra acompanhar</small></div><span class="chip">Ver</span>`;
     b.onclick = async ()=>{
       destravaSom();
       const salvo = ls.get("dt-cod-"+v.id);
       if (salvo){ const ok = await validaCodigo(salvo); if (ok && ok.van.id===v.id) return abrirMapa(ok); }
-      vanEscolhida = v; $("#fCod").hidden=false; $("#codLabel").textContent=`Código da van da ${v.nome}`; $("#codErr").textContent=""; $("#cod").value=""; $("#cod").focus();
+      vanEscolhida = v; $("#fCod").hidden=false; $("#codLabel").textContent=`Código da van ${da(v)} ${v.nome}`; $("#codErr").textContent=""; $("#cod").value=""; $("#cod").focus();
     };
     $("#vans").appendChild(b);
   });
@@ -264,7 +265,7 @@ input[type=text]:focus{outline:none;border-color:var(--roxo);box-shadow:0 0 0 3p
     e.preventDefault();
     const ok = await validaCodigo($("#cod").value);
     if (!ok){ $("#codErr").textContent = "Código errado. Confira a mensagem da Danni's Tur."; return; }
-    if (vanEscolhida && ok.van.id!==vanEscolhida.id){ $("#codErr").textContent = `Esse código é da van da ${ok.van.nome}.`; return; }
+    if (vanEscolhida && ok.van.id!==vanEscolhida.id){ $("#codErr").textContent = `Esse código é da van ${da(ok.van)} ${ok.van.nome}.`; return; }
     ls.set("dt-cod-"+ok.van.id, ok.codigo); abrirMapa(ok);
   });
 
@@ -306,7 +307,7 @@ input[type=text]:focus{outline:none;border-color:var(--roxo);box-shadow:0 0 0 3p
 
   function abrirMapa(ok){
     sessao = ok; aplicaModo(); iniciaMapa(); setTimeout(()=>mapa.invalidateSize(),50);
-    $("#pNome").textContent = `Van da ${ok.van.nome}`;
+    $("#pNome").textContent = `Van ${da(ok.van)} ${ok.van.nome}`;
     $("#btnMot").hidden = true;
     telefone(ok.van, ok.codigo).then(t=>{ if (!t) return; $("#btnMot").href = `https://wa.me/55${t}`; $("#btnMot").textContent = `Falar com ${ok.van.nome} · (${t.slice(0,2)}) ${t.slice(2,7)}-${t.slice(7)}`; $("#btnMot").hidden = false; });
     $("#end").value = (casa()||{}).txt && casa().txt!=="minha localização" ? casa().txt : "";
@@ -378,7 +379,7 @@ input[type=text]:focus{outline:none;border-color:var(--roxo);box-shadow:0 0 0 3p
     const ant = hist.length>2 ? hist[hist.length-3] : null;
     const aproximando = ant ? km([ant.la,ant.lo],[c.lat,c.lng]) > dist + 0.02 : true;
     if (alertado!==d.r && idade<120 && (min<=ALERTA_MIN || dist<0.6) && aproximando && dist>=0.08){
-      alertado = d.r; avisa(`A van da ${sessao.van.nome} está a uns ${min} minutos da sua casa!`);
+      alertado = d.r; avisa(`A van ${da(sessao.van)} ${sessao.van.nome} está a uns ${min} minutos da sua casa!`);
     }
   }
 
@@ -431,7 +432,7 @@ input[type=text]:focus{outline:none;border-color:var(--roxo);box-shadow:0 0 0 3p
     const ok = await validaCodigo($("#mCod").value);
     if (!ok){ $("#mErr").textContent="Código errado."; return; }
     mot = ok; ls.set("dt-mot", ok.codigo);
-    $("#fMot").hidden = true; $("#motPainel").hidden = false; $("#motTit").textContent = `Van da ${ok.van.nome}`;
+    $("#fMot").hidden = true; $("#motPainel").hidden = false; $("#motTit").textContent = `Van ${da(ok.van)} ${ok.van.nome}`;
   });
   (async ()=>{ const s = ls.get("dt-mot"); if (s){ const ok = await validaCodigo(s); if (ok){ $("#mCod").value = ok.codigo; } } })();
   document.querySelectorAll(".mot .seg button").forEach(b=>b.onclick=()=>{ if (watchId!==null) return; sentido=b.dataset.s; document.querySelectorAll(".mot .seg button").forEach(x=>x.setAttribute("aria-pressed", x===b)); });
@@ -457,7 +458,7 @@ input[type=text]:focus{outline:none;border-color:var(--roxo);box-shadow:0 0 0 3p
     const obj = {v:mot.van.id, r:rotaId, st:"rota", s:sentido, la:+la.toFixed(6), lo:+lo.toFixed(6), t:now};
     ultEnvio = obj;
     const ok = await publica(obj);
-    $("#motSt").innerHTML = `<b>Rota no ar.</b> Os pais da van da ${mot.van.nome} estão vendo. Última posição enviada ${ok?"agora":"(falhou)"} · ${enviadas} envios.`;
+    $("#motSt").innerHTML = `<b>Rota no ar.</b> Os pais da van ${da(mot.van)} ${mot.van.nome} estão vendo. Última posição enviada ${ok?"agora":"(falhou)"} · ${enviadas} envios.`;
   }
   function onErroGps(e){
     if (e.code===1) avisoMot("A localização está bloqueada. No iPhone: Ajustes › Privacidade › Serviços de Localização › Safari › 'Durante o uso'. No Android: toque no cadeado ao lado do endereço e permita Localização.");
