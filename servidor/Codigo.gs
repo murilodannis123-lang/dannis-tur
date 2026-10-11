@@ -14,6 +14,8 @@ const COLS = ["id","token","criado_em","status","responsavel","cpf","rg","celula
               "inicio_idx","mensalidade","parcelas","total","data_contrato","liberado_em","assinado_em","arquivo_url","observacao_interna"];
 const STATUS = {AGUARDANDO:"aguardando_valor", LIBERADO:"liberado", ASSINADO:"assinado_online", IMPRESSO:"vai_entregar_impresso", RECEBIDO:"recebido", CANCELADO:"cancelado"};
 const FUSO = "America/Sao_Paulo";
+const PLANILHA_ID = "1luSn0_AEFnz38Q2SQsFvO0ZpnZv75azj107FUIKeBlQ";   // planilha "Danni's Tur – Renovações 2027"
+function planilha_(){ return SpreadsheetApp.openById(PLANILHA_ID); }
 
 /* ===================== entrada ===================== */
 function doGet(){ return json_({ok:true, servico:"Danni's Tur 2027"}); }
@@ -177,7 +179,7 @@ function avisaDono_(texto){
 
 /* ===================== instalação (rodar uma vez) ===================== */
 function configurar(){
-  const ss = SpreadsheetApp.getActive();
+  const ss = planilha_();
   let sh = ss.getSheetByName(ABA);
   if (!sh){ sh = ss.insertSheet(ABA); }
   if (sh.getLastRow() === 0){
@@ -196,7 +198,7 @@ function configurar(){
 }
 
 /* ===================== utilidades ===================== */
-function aba_(){ const sh = SpreadsheetApp.getActive().getSheetByName(ABA); if (!sh) throw erro_("Rode configurar() primeiro."); return sh; }
+function aba_(){ const sh = planilha_().getSheetByName(ABA); if (!sh) throw erro_("Rode configurar() primeiro."); return sh; }
 function pasta_(){
   const nome = "Danni's Tur – Contratos assinados";
   const it = DriveApp.getFoldersByName(nome);
