@@ -286,3 +286,5 @@ img.van{height:auto}
 .motoristas h2 em{color:var(--laranja);font-style:inherit}
 .foto-frota{margin:0}
 .foto-frota img{width:100%;height:auto;border-radius:14px;display:block}
+.fotos figcaption.sonho{font-family:var(--f-display);font-style:italic;font-weight:800;font-size:clamp(20px,4.6vw,26px);color:var(--roxo);line-height:1.1}
+.fotos figcaption.sonho em{color:var(--laranja);font-style:inherit}
