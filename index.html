@@ -19,18 +19,18 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,600;0,800;1,700;1,800;1,900&family=Figtree:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="estilo.css?v=9">
+<link rel="stylesheet" href="estilo.css?v=10">
 <style>body{margin:0} main.inicio{padding-block:24px 40px} main.inicio > .wrap{display:grid;gap:26px}</style>
 </head>
 <body>
 <header class="hero">
   <img class="logo" src="logo.png" alt="Danni's Tur" width="750" height="160">
   <div class="slogan" aria-label="Vem com a gente!">VEM COM A GENTE<span>!!!</span></div>
-  <p class="sub">Transporte escolar em Sumaré há 25 anos</p>
 </header>
 
 <div class="estrada" aria-hidden="true">
   <div class="van" id="van"><img src="img/van-dannis.svg" alt="" width="410" height="172"></div>
+  <div class="balao" id="balao"><b>25</b> anos!</div>
 </div>
 
 <main class="inicio">
@@ -128,7 +128,7 @@
 
   /* ---------- van na estrada: vem, freia (com som), espera e sai bem devagar ---------- */
   (async function vanNaEstrada(){
-    const box = $("#van"), estrada = box.parentElement;
+    const box = $("#van"), estrada = box.parentElement, balao = $("#balao");
     const calmo = matchMedia("(prefers-reduced-motion: reduce)").matches;
     let rodas = [];
     try {   // coloca o desenho dentro da página pra girar as rodas de acordo com a velocidade
@@ -136,7 +136,7 @@
       box.innerHTML = txt.replace(/<style>[\s\S]*?<\/style>/, "");
       rodas = [...box.querySelectorAll(".roda")].map((g,i) => ({g, cx: i ? 330 : 92, cy: 146}));
     } catch(e){}
-    if (calmo) return;   // quem pediu menos movimento vê a van parada no meio
+    if (calmo){ balao.classList.add("on", "fixo"); return; }   // quem pediu menos movimento vê a van parada no meio, com o balão
     estrada.classList.add("js");
     const T = {entra: 3400, parada: 2200, sai: 7600, vazio: 1400};
     const ciclo = T.entra + T.parada + T.sai + T.vazio;
@@ -146,19 +146,21 @@
       const W = estrada.clientWidth, w = box.offsetWidth, meio = (W - w) / 2, fora = -w - 20, fim = W + 20;
       const t = (agora - t0) % ciclo, volta = Math.floor((agora - t0) / ciclo);
       if (volta !== quadro.v){ quadro.v = volta; freou = false; }
-      let x, incl = 0;
+      let x, incl = 0, parada = false;
       if (t < T.entra){
         x = fora + (meio - fora) * outQuart(t / T.entra);
         if (!freou && t > T.entra - 1500){ freou = true; freio(); }
       } else if (t < T.entra + T.parada){
         x = meio; const d = (t - T.entra) / 450;           // "mergulho" do bico ao parar
         incl = d < 1 ? Math.sin(d * Math.PI) * 1.6 : 0;
+        parada = t > T.entra + 250 && t < T.entra + T.parada - 150;
       } else if (t < T.entra + T.parada + T.sai){
         x = meio + (fim - meio) * inQuad((t - T.entra - T.parada) / T.sai);
       } else x = fim;
       if (ultimoX !== null && Math.abs(x - ultimoX) < W){ giro += (x - ultimoX) / (w * 21 / 410) * 57.3; }
       ultimoX = x;
       box.style.transform = `translateX(${x}px) rotate(${incl}deg)`;
+      balao.style.transform = `translateX(${x + w * .62}px)`; balao.classList.toggle("on", parada);
       rodas.forEach(r => r.g.style.transform = `rotate(${(giro % 360).toFixed(1)}deg)`);
       requestAnimationFrame(quadro);
     }

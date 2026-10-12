@@ -288,3 +288,12 @@ img.van{height:auto}
 .foto-frota img{width:100%;height:auto;border-radius:14px;display:block}
 .fotos figcaption.sonho{font-family:var(--f-display);font-style:italic;font-weight:800;font-size:clamp(20px,4.6vw,26px);color:var(--roxo);line-height:1.1}
 .fotos figcaption.sonho em{color:var(--laranja);font-style:inherit}
+
+/* balão "25 anos!" que aparece quando a van para */
+.estrada{height:200px}
+.balao{position:absolute;left:0;top:6px;z-index:2;background:#fff;border:3px solid var(--roxo);border-radius:18px;padding:6px 14px;font-family:var(--f-display);font-style:italic;font-weight:800;font-size:20px;color:var(--roxo);white-space:nowrap;box-shadow:0 4px 0 rgba(79,23,82,.25);opacity:0;scale:.4;transform-origin:20% 100%;transition:opacity .2s,scale .25s cubic-bezier(.3,1.6,.5,1);pointer-events:none}
+.balao b{color:var(--laranja);font-size:28px;font-weight:900;margin-right:2px}
+.balao::after{content:"";position:absolute;left:18px;bottom:-13px;border:7px solid transparent;border-top:9px solid var(--roxo);border-bottom:0;transform:skewX(-20deg)}
+.balao::before{content:"";position:absolute;left:21px;bottom:-8px;border:5px solid transparent;border-top:7px solid #fff;border-bottom:0;transform:skewX(-20deg);z-index:1}
+.balao.on{opacity:1;scale:1}
+.balao.fixo{left:calc(50% + min(30px,8vw))}
