@@ -92,6 +92,8 @@ input[type=text]:focus{outline:none;border-color:var(--roxo);box-shadow:0 0 0 3p
 .mot .seg button[aria-pressed="true"]{background:var(--amarelo);color:var(--tinta)}
 .bigbtn{width:180px;height:180px;border-radius:50%;margin:0 auto;border:6px solid rgba(255,255,255,.18);background:var(--laranja);color:#fff;font-family:var(--f-display);font-style:italic;font-weight:900;font-size:24px;line-height:1.05;cursor:pointer}
 .bigbtn.on{background:var(--ok);animation:onda 1.6s infinite}
+.auto{text-align:center;font-weight:700;font-size:17px;color:#fff;background:rgba(255,255,255,.12);border-radius:12px;padding:10px 12px}
+.auto .btn-link{color:#fff;font-size:15px}
 @keyframes onda{0%{box-shadow:0 0 0 0 rgba(29,138,78,.6)}100%{box-shadow:0 0 0 22px rgba(29,138,78,0)}}
 .mot .st{font-size:14px;color:#d8d0da;margin:0}
 .mot .st b{color:var(--amarelo)}
@@ -109,9 +111,9 @@ input[type=text]:focus{outline:none;border-color:var(--roxo);box-shadow:0 0 0 3p
 <body>
 <div class="app">
   <header class="topo">
-    <a class="voltar" href="../"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Início</a>
+    <a class="voltar" href="../?inicio=1"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Início</a>
     <span class="tag" id="tagModo" hidden>Motorista</span>
-    <a href="../" class="topo-logo"><img src="../logo.png" alt="Danni's Tur" width="750" height="160"></a>
+    <a href="../?inicio=1" class="topo-logo"><img src="../logo.png" alt="Danni's Tur" width="750" height="160"></a>
   </header>
 
   <!-- PAIS: escolher van -->
@@ -191,10 +193,11 @@ input[type=text]:focus{outline:none;border-color:var(--roxo);box-shadow:0 0 0 3p
         <button type="button" aria-pressed="false" data-s="volta">Volta · levar</button>
       </div>
       <button class="bigbtn" id="bigbtn" type="button">INICIAR<br>ROTA</button>
-      <p class="st" id="motSt">Toque antes de sair da garagem e deixe o celular no suporte com esta tela aberta.</p>
+      <div class="auto" id="autoBox" hidden><span id="autoTxt">A rota começa sozinha em 5 s</span> <button type="button" class="btn btn-link" id="autoNao">Agora não</button></div>
+      <p class="st" id="motSt">Abriu o app, a rota começa sozinha. Deixe o celular no suporte com esta tela aberta.</p>
       <p class="aviso" id="motAviso" hidden></p>
     </div>
-    <p class="dica">Durante a rota: não feche esta tela e não abra outro app (nem Waze). Se a tela apagar ou o app sair, os pais param de ver a van até você voltar aqui. Ligue o carregador.</p>
+    <p class="dica">Durante a rota: não feche esta tela e não abra outro app (nem Waze). Se a tela apagar ou o app sair, os pais param de ver a van até você voltar aqui. Ligue o carregador. O sentido (ida/volta) troca sozinho a cada rota; se estiver errado, é só tocar.</p>
   </section>
 
   <p class="rodape"><a href="#" id="trocaModo">Sou motorista</a></p>
@@ -439,6 +442,23 @@ input[type=text]:focus{outline:none;border-color:var(--roxo);box-shadow:0 0 0 3p
   function entraMot(ok){
     mot = ok; ls.set("dt-mot", ok.codigo); $("#mCod").value = ok.codigo;
     $("#fMot").hidden = true; $("#motPainel").hidden = false; $("#motTit").textContent = `Van ${da(ok.van)} ${ok.van.nome}`;
+    /* sentido: alterna sozinho (ida → volta → ida…), dá pra trocar a qualquer hora */
+    escolheSentido(ls.get("dt-ultimo-sentido") === "ida" ? "volta" : "ida");
+    if (watchId === null) contagem();
+  }
+  /* abriu o app do motorista → a rota começa sozinha em 5 s (dá pra cancelar) */
+  let autoT = null;
+  function contagem(){
+    let n = 5; $("#autoBox").hidden = false;
+    const passo = () => {
+      if (n <= 0){ $("#autoBox").hidden = true; autoT = null; if (watchId === null) iniciarRota(); return; }
+      $("#autoTxt").textContent = `A rota começa sozinha em ${n} s`; n--; autoT = setTimeout(passo, 1000);
+    };
+    passo();
+  }
+  $("#autoNao").onclick = () => { clearTimeout(autoT); autoT = null; $("#autoBox").hidden = true; $("#motSt").textContent = "Rota não iniciada. Toque no botão quando sair."; };
+  function escolheSentido(v){
+    sentido = v; document.querySelectorAll(".mot .seg button").forEach(x => x.setAttribute("aria-pressed", x.dataset.s === v));
   }
   /* ===== atalhos: link direto da van (?v=CÓDIGO), do motorista (?m=CÓDIGO) e celular que já usou ===== */
   (async ()=>{
@@ -463,7 +483,7 @@ input[type=text]:focus{outline:none;border-color:var(--roxo);box-shadow:0 0 0 3p
     }
     if (sVan){ const ok = await validaCodigo(sVan); if (ok) return abrirMapa(ok); }
   })();
-  document.querySelectorAll(".mot .seg button").forEach(b=>b.onclick=()=>{ if (watchId!==null) return; sentido=b.dataset.s; document.querySelectorAll(".mot .seg button").forEach(x=>x.setAttribute("aria-pressed", x===b)); });
+  document.querySelectorAll(".mot .seg button").forEach(b=>b.onclick=()=>{ escolheSentido(b.dataset.s); if (watchId!==null) ls.set("dt-ultimo-sentido", sentido); if (ultEnvio && watchId!==null){ ultEnvio = null; } });
 
   async function publica(obj){
     try{
@@ -492,22 +512,23 @@ input[type=text]:focus{outline:none;border-color:var(--roxo);box-shadow:0 0 0 3p
     if (e.code===1) avisoMot("A localização está bloqueada. No iPhone: Ajustes › Privacidade › Serviços de Localização › Safari › 'Durante o uso'. No Android: toque no cadeado ao lado do endereço e permita Localização.");
     else avisoMot("GPS sem sinal no momento. Continuo tentando.");
   }
-  $("#bigbtn").onclick = async ()=>{
-    if (watchId===null){
+  $("#bigbtn").onclick = ()=>{ clearTimeout(autoT); autoT = null; $("#autoBox").hidden = true; return watchId===null ? iniciarRota() : pararRota(); };
+  async function iniciarRota(){
       if (!navigator.geolocation){ avisoMot("Este celular não tem GPS liberado no navegador."); return; }
+      ls.set("dt-ultimo-sentido", sentido);
       rotaId = Date.now().toString(36); ultEnvio=null; enviadas=0; falhas=0;
       watchId = navigator.geolocation.watchPosition(onPos, onErroGps, {enableHighAccuracy:true, maximumAge:5000, timeout:30000});
       try{ wlMot = await navigator.wakeLock.request("screen"); }catch(e){}
       $("#bigbtn").classList.add("on"); $("#bigbtn").innerHTML="ENCERRAR<br>ROTA";
       $("#motSt").innerHTML = "<b>Rota no ar.</b> Pegando o GPS…";
-    } else {
+  }
+  async function pararRota(){
       navigator.geolocation.clearWatch(watchId); watchId=null;
       if (ultEnvio) await publica({...ultEnvio, st:"fim", t:Date.now()});
       try{ wlMot && wlMot.release(); }catch(e){}
       $("#bigbtn").classList.remove("on"); $("#bigbtn").innerHTML="INICIAR<br>ROTA";
       $("#motSt").textContent = `Rota encerrada. ${enviadas} envios. Os pais deixam de ver a van.`;
-    }
-  };
+  }
   document.addEventListener("visibilitychange", async ()=>{ if (document.visibilityState==="visible" && watchId!==null){ try{ wlMot = await navigator.wakeLock.request("screen"); }catch(e){} } });
   window.addEventListener("beforeunload", e=>{ if (watchId!==null){ e.preventDefault(); e.returnValue=""; } });
 

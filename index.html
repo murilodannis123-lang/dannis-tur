@@ -133,6 +133,10 @@
 
   /* links antigos (…/dannis-tur/#renovar) vão direto pra renovação */
   if (location.hash === "#renovar") location.replace("renovacao.html");
+  /* celular de motorista (já entrou pelo link do motorista e não acompanha van como pai): abre direto na rota */
+  try {
+    if (!/inicio/.test(location.search) && localStorage.getItem("dt-mot") && !localStorage.getItem("dt-ultima")) location.replace("van/#motorista");
+  } catch(e){}
 
   /* frota: uma van por motorista */
   const FROTA = [
