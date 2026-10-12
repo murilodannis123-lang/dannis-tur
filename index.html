@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Danni's Tur · Transporte escolar em Sumaré</title>
-<meta name="description" content="Danni's Tur: transporte escolar em Sumaré há 25 anos, levando gerações. Renovação 2027 e acompanhamento da van. Vem com a gente!">
+<meta name="description" content="Danni's Tur: transporte escolar em Sumaré há 25 anos, levando gerações. Vem com a gente!">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Danni's Tur · Transporte escolar">
 <meta property="og:description" content="Há 25 anos levando gerações em Sumaré. Vem com a gente!">
@@ -65,11 +65,6 @@
       <a class="acao renov" href="renovacao.html">
         <span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2.8h8.5L19 7.3v13.9H6z" fill="none" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"/><path d="M14.3 2.8v4.6H19" fill="none" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"/><path d="M8.8 14.2l2.4 2.4 4.4-4.8" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
         <span><b>Renovação 2027</b><small>Confirme a vaga do seu filho</small></span>
-        <svg class="seta" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </a>
-      <a class="acao vanbtn" href="van/">
-        <span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-6.5-6.2-6.5-11.2a6.5 6.5 0 0 1 13 0C18.5 14.8 12 21 12 21z" fill="none" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="9.8" r="2.4" fill="#ffc61a"/></svg></span>
-        <span><b>Onde está a van?</b><small>Acompanhe no mapa, em tempo real</small></span>
         <svg class="seta" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </a>
     </div>
@@ -133,10 +128,6 @@
 
   /* links antigos (…/dannis-tur/#renovar) vão direto pra renovação */
   if (location.hash === "#renovar") location.replace("renovacao.html");
-  /* celular de motorista (já entrou pelo link do motorista e não acompanha van como pai): abre direto na rota */
-  try {
-    if (!/inicio/.test(location.search) && localStorage.getItem("dt-mot") && !localStorage.getItem("dt-ultima")) location.replace("van/#motorista");
-  } catch(e){}
 
   /* frota: uma van por motorista */
   const FROTA = [
