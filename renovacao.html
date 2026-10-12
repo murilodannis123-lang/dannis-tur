@@ -167,6 +167,29 @@
   const {ESCOLAS, esc, fmtData, hojeISO, maskCpf, maskTel, cpfValido, contratoHTML, zapLink, api, API, ZAP_DANNIS} = DT;
   const ls = {get(k){try{return localStorage.getItem(k)}catch(e){return null}}, set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
 
+  /* ---------- mesmo formulário pra renovação e pra contrato novo (renovacao.html?novo) ---------- */
+  const NOVO = new URLSearchParams(location.search).has("novo");
+  const TX = NOVO ? {
+    acao: "contratar", fim: "Enviar cadastro", sucesso: "Recebemos o seu cadastro!", outro: "Fazer outro cadastro",
+    titulo: "MATRÍCULA NOVA 2027", confirma: "✅ Quero contratar o transporte escolar da Danni's Tur para 2027.",
+    zap: d => `Oi! Acabei de fazer o cadastro pra van em 2027 (${d.responsavel}). Meu contrato: `
+  } : {
+    acao: "renovar", fim: "Confirmar renovação", sucesso: "Recebemos a sua renovação!", outro: "Fazer outra renovação",
+    titulo: "RENOVAÇÃO 2027", confirma: "✅ Confirmo que quero renovar o transporte escolar para 2027.",
+    zap: d => `Oi! Acabei de renovar a van pra 2027 (${d.responsavel}). Meu contrato: `
+  };
+  if (NOVO){
+    document.title = "Danni's Tur · Contrato novo 2027";
+    document.body.classList.add("modo-novo");
+    $(".titulo-sec h2").textContent = "Contrate a van pro seu filho";
+    $(".titulo-sec p").textContent = "Preencha os dados do aluno. A Danni's Tur coloca o valor do seu caso e te avisa no WhatsApp quando o contrato estiver pronto pra assinar.";
+    $("#aceite").parentElement.lastChild.textContent = " Li a prévia do contrato, quero contratar o transporte escolar da Danni's Tur para 2027 e autorizo o uso destes dados para o contrato.";
+    $("#confirmar").textContent = TX.fim;
+    $("#e4 h3").textContent = "Bem-vindo à Danni's Tur!";
+    $("#sucTxt").textContent = "Recebemos o seu cadastro. A Danni's Tur vai colocar o valor do seu caso e te mandar o link do contrato no WhatsApp.";
+    $("#novo").textContent = TX.outro;
+  }
+
   /* ---------- etapas ---------- */
   let primeira = true;
   function mostrar(n){
@@ -302,26 +325,26 @@
 
   /* ---------- confirmar ---------- */
   function mensagem(){
-    let m = `*RENOVAÇÃO 2027 – DANNI'S TUR* 🚐\n\n*Responsável:* ${dados.responsavel}\n*CPF:* ${dados.cpf}\n*RG:* ${dados.rg}\n*Celular:* ${dados.celular}\n`;
+    let m = `*${TX.titulo} – DANNI'S TUR* 🚐\n\n*Responsável:* ${dados.responsavel}\n*CPF:* ${dados.cpf}\n*RG:* ${dados.rg}\n*Celular:* ${dados.celular}\n`;
     if (dados.foneCasa) m += `*Fone casa:* ${dados.foneCasa}\n`;
     if (dados.outroFone) m += `*Outro fone:* ${dados.outroFone}\n`;
     if (dados.email) m += `*E-mail:* ${dados.email}\n`;
     m += `*Endereço:* ${dados.rua}\n*Bairro:* ${dados.bairro}\n*Cidade:* ${dados.cidade}\n*CEP:* ${dados.cep}\n\n`;
     dados.alunos.forEach((a,i)=>{ m += `*${dados.alunos.length>1?`Aluno ${i+1}`:"Aluno"}:* ${a.nome}\nNascimento: ${fmtData(a.nasc)}\nEscola: ${a.escola}\nPeríodo: ${a.periodo}\nTrajeto: ${a.trajeto}\n\n`; });
     if (dados.obs) m += `*Observações:* ${dados.obs}\n\n`;
-    return m + "✅ Confirmo que quero renovar o transporte escolar para 2027.";
+    return m + TX.confirma;
   }
   $("#confirmar").onclick = async ()=>{
     const b = $("#confirmar"); b.disabled = true; b.textContent = "Enviando…"; $("#e3Err").textContent = "";
     $("#linkContrato").hidden = true; $("#zap").hidden = true;
     if (API){
       try{
-        const r = await api("cadastrar", {dados});
+        const r = await api("cadastrar", {dados: {...dados, tipo: NOVO ? "novo" : "renovacao"}});
         const link = DT.linkContrato(r.token);
         ls.set("dt-contrato", link);
         $("#linkContrato").href = link; $("#linkContrato").hidden = false;
-        $("#sucTxt").textContent = "Recebemos a sua renovação! Guarde este link: é por ele que você acompanha, imprime ou assina o contrato. A Danni's Tur te avisa no WhatsApp quando o valor estiver colocado.";
-        $("#zap").href = zapLink(ZAP_DANNIS, `Oi! Acabei de renovar a van pra 2027 (${dados.responsavel}). Meu contrato: ${new URL(link, location.href).href}`);
+        $("#sucTxt").textContent = TX.sucesso + " Guarde este link: é por ele que você acompanha, imprime ou assina o contrato. A Danni's Tur te avisa no WhatsApp quando o valor estiver colocado.";
+        $("#zap").href = zapLink(ZAP_DANNIS, TX.zap(dados) + new URL(link, location.href).href);
         $("#zap").textContent = "Avisar a Danni's Tur no WhatsApp (opcional)"; $("#zap").hidden = false;
         mostrar(4);
       }catch(e){
@@ -332,7 +355,7 @@
       $("#sucTxt").textContent = "Agora toque no botão abaixo pra mandar a sua confirmação no WhatsApp da Danni's Tur.";
       mostrar(4);
     }
-    b.disabled = false; b.textContent = "Confirmar renovação";
+    b.disabled = false; b.textContent = TX.fim;
   };
   $("#novo").onclick = ()=>{
     $("#e2").reset(); $("#rCidade").value="Sumaré"; $("#alunos").innerHTML=""; nAluno=0; escolaSel=null; addAluno();

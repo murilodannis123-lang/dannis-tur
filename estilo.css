@@ -315,3 +315,11 @@ img.van{height:auto}
 /* botão instalar o app */
 .acao.instalar{background:var(--roxo);border:0;font:inherit;text-align:left;cursor:pointer;width:100%}
 .dica-instalar{background:var(--roxo-claro);color:var(--roxo);border-radius:14px;padding:14px 16px;font-size:15px;line-height:1.45}
+
+/* início: renovação e contrato novo lado a lado */
+.inicio-acoes{grid-template-columns:repeat(2,minmax(0,1fr))}
+.inicio-acoes .acao.instalar,.inicio-acoes .dica-instalar{grid-column:1/-1}
+.acao.quad{grid-template-columns:1fr;align-content:start;gap:10px;min-height:150px;padding:16px}
+.acao.quad .ic{width:46px;height:46px}
+.acao.quad b{font-size:clamp(19px,4.8vw,24px)}
+.acao.novo{background:#1677c9}

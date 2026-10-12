@@ -55,6 +55,7 @@ body{margin:0}
 .grade2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .btns{display:grid;gap:8px}
 .ok-msg{color:var(--ok);font-weight:700;font-size:14px;margin:0}
+.tag-novo{font-style:normal;font-size:12px;font-weight:800;letter-spacing:.04em;background:#1677c9;color:#fff;border-radius:999px;padding:2px 9px;vertical-align:middle;white-space:nowrap}
 </style>
 </head>
 <body>
@@ -180,7 +181,7 @@ body{margin:0}
     $("#lista").innerHTML = lista.length ? lista.map(f=>`
       <button type="button" class="fam" data-id="${f.id}">
         <span class="n">${f.id}</span>
-        <span><b>${esc(f.responsavel)}</b><small>${f.alunos.map(a=>`${esc(a.nome)} · ${esc(a.escola)}`).join(" · ")}</small><small>${esc(f.celular)} · cadastro ${fmtData(f.dataCadastro)}${f.valores && num(f.valores.mensalidade) ? ` · R$ ${brl(num(f.valores.mensalidade))}/mês` : ""}</small></span>
+        <span><b>${esc(f.responsavel)}</b>${f.tipo==="novo"?' <em class="tag-novo">Contrato novo</em>':''}<small>${f.alunos.map(a=>`${esc(a.nome)} · ${esc(a.escola)}`).join(" · ")}</small><small>${esc(f.celular)} · cadastro ${fmtData(f.dataCadastro)}${f.valores && num(f.valores.mensalidade) ? ` · R$ ${brl(num(f.valores.mensalidade))}/mês` : ""}</small></span>
         <span class="pill ${f.status}">${NOMES[f.status]||f.status}</span>
       </button>`).join("") : `<div class="vazio">${familias.length ? "Nada nesse filtro." : "Nenhuma renovação ainda. Quando um pai confirmar no site, ela aparece aqui e você recebe aviso no WhatsApp."}</div>`;
     $("#lista").querySelectorAll(".fam").forEach(b=>b.onclick=()=>abrir(b.dataset.id));
@@ -216,7 +217,7 @@ body{margin:0}
     atual = familias.find(f=>String(f.id)===String(id)); if (!atual) return;
     $("#painel").hidden = true; $("#detalhe").hidden = false; window.scrollTo(0,0);
     const f = atual, v = f.valores || {}, vg = vigencia(f.dataCadastro, v.ini);
-    $("#dNome").textContent = `${f.id} · ${f.responsavel}`;
+    $("#dNome").innerHTML = `${f.id} · ${esc(f.responsavel)}${f.tipo==="novo" ? ' <em class="tag-novo">Contrato novo</em>' : ''}`;
     $("#dInfo").innerHTML = `
       <span><b>CPF</b> ${esc(f.cpf)} · <b>RG</b> ${esc(f.rg)}</span>
       <span><b>Celular</b> ${esc(f.celular)}${f.foneCasa?` · <b>casa</b> ${esc(f.foneCasa)}`:""}${f.outroFone?` · <b>outro</b> ${esc(f.outroFone)}`:""}</span>

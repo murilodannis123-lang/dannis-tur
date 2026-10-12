@@ -23,7 +23,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,600;0,800;1,700;1,800;1,900&family=Figtree:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="estilo.css?v=13">
+<link rel="stylesheet" href="estilo.css?v=14">
 <style>body{margin:0} main.inicio{padding-block:24px 40px} main.inicio > .wrap{display:grid;gap:26px}</style>
 </head>
 <body>
@@ -41,10 +41,13 @@
   <div class="wrap">
 
     <div class="inicio-acoes">
-      <a class="acao renov" href="renovacao.html">
+      <a class="acao quad renov" href="renovacao.html">
         <span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2.8h8.5L19 7.3v13.9H6z" fill="none" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"/><path d="M14.3 2.8v4.6H19" fill="none" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"/><path d="M8.8 14.2l2.4 2.4 4.4-4.8" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-        <span><b>Renovação 2027</b><small>Confirme a vaga do seu filho</small></span>
-        <svg class="seta" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span><b>Renovação 2027</b><small>Já é aluno? Confirme a vaga</small></span>
+      </a>
+      <a class="acao quad novo" href="renovacao.html?novo">
+        <span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2.8h8.5L19 7.3v13.9H6z" fill="none" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"/><path d="M14.3 2.8v4.6H19" fill="none" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"/><path d="M12.5 11v6.4M9.3 14.2h6.4" stroke="#ffc61a" stroke-width="2.2" stroke-linecap="round"/></svg></span>
+        <span><b>Contrato novo</b><small>Quer a van em 2027? Faça o cadastro</small></span>
       </a>
       <button type="button" class="acao instalar" id="instalar" hidden>
         <span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6.5" y="2.5" width="11" height="19" rx="2.5" fill="none" stroke="#fff" stroke-width="1.8"/><path d="M12 7v7.5M8.8 11.6 12 14.8l3.2-3.2" fill="none" stroke="#ffc61a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
@@ -213,21 +216,24 @@
        Tocam depois do primeiro toque na tela; o botão "Som" liga e desliga (fica lembrado) */
     const som = (function(){
       let ac = null, mestre = null;
-      const ligado = () => { try { return localStorage.getItem("dt-musica") !== "off"; } catch(e){ return true; } };
-      const grava = v => { try { localStorage.setItem("dt-musica", v); } catch(e){} };
+      const ligado = () => { try { return localStorage.getItem("dt-som") !== "off"; } catch(e){ return true; } };
+      const grava = v => { try { localStorage.setItem("dt-som", v); } catch(e){} };
       function acorda(){
         try {
+          // iPhone: toca mesmo com a chave do silencioso ligada (Safari 17+)
+          if (navigator.audioSession) navigator.audioSession.type = "playback";
           ac = ac || new (window.AudioContext || window.webkitAudioContext)();
-          if (!mestre){ mestre = ac.createGain(); mestre.gain.value = .6; mestre.connect(ac.destination); }
-          if (ac.state === "suspended") ac.resume();
+          if (!mestre){ mestre = ac.createGain(); mestre.gain.value = ligado() ? .9 : 0; mestre.connect(ac.destination); }
+          if (ac.state !== "running") ac.resume();
+          const b = ac.createBuffer(1, 1, 22050), z = ac.createBufferSource(); z.buffer = b; z.connect(ac.destination); z.start(0);   // destrava o áudio no iPhone
         } catch(e){}
       }
-      document.addEventListener("pointerdown", acorda, {passive:true});
+      ["pointerdown", "touchend", "click", "keydown"].forEach(ev => document.addEventListener(ev, acorda, {passive:true}));
       const bt = $("#som"); bt.setAttribute("aria-pressed", ligado());
       bt.addEventListener("click", e => {
         e.stopPropagation(); acorda();
         const on = !ligado(); grava(on ? "on" : "off"); bt.setAttribute("aria-pressed", on);
-        if (mestre) mestre.gain.setTargetAtTime(on ? .6 : 0, ac.currentTime, .05);
+        if (mestre) mestre.gain.setTargetAtTime(on ? .9 : 0, ac.currentTime, .05);
         if (on) buzina();
       });
       const pode = () => ac && mestre && ac.state === "running" && !document.hidden && ligado();
@@ -240,7 +246,7 @@
       function motor(dur, pontos){   // pontos: [[tempo 0..1, freq, volume], ...]
         const t = ac.currentTime, o1 = ac.createOscillator(), o2 = ac.createOscillator(), lp = ac.createBiquadFilter();
         const g = ac.createGain(), g2 = ac.createGain(), am = ac.createOscillator(), amg = ac.createGain(), vol = ac.createGain();
-        o1.type = "sawtooth"; o2.type = "square"; g2.gain.value = .45; lp.type = "lowpass"; lp.frequency.value = 480; lp.Q.value = 3;
+        o1.type = "sawtooth"; o2.type = "square"; g2.gain.value = .45; lp.type = "lowpass"; lp.frequency.value = 1300; lp.Q.value = 2;
         am.type = "square"; amg.gain.value = .35; g.gain.value = .65;
         pontos.forEach(([p, f, v], i) => {
           const tt = t + p * dur, m = i ? "exponentialRampToValueAtTime" : "setValueAtTime";
@@ -251,9 +257,9 @@
         o1.connect(lp); o2.connect(g2); g2.connect(lp); lp.connect(g); g.connect(vol); vol.connect(mestre);
         [o1, o2, am].forEach(o => { o.start(t); o.stop(t + dur + .05); });
       }
-      function chegada(dur){ if (pode()) motor(dur, [[0, 105, .001], [.15, 100, .14], [.62, 70, .3], [1, 44, .1]]); }
-      function marcha(dur){ if (pode()) motor(dur, [[0, 44, .1], [.5, 41, .08], [1, 42, .1]]); }
-      function saida(dur){ if (pode()) motor(dur, [[0, 42, .1], [.08, 75, .32], [.3, 115, .3], [.32, 80, .28], [.6, 125, .2], [1, 130, .001]]); }
+      function chegada(dur){ if (pode()) motor(dur, [[0, 190, .001], [.15, 180, .16], [.62, 130, .3], [1, 90, .12]]); }
+      function marcha(dur){ if (pode()) motor(dur, [[0, 90, .12], [.5, 84, .1], [1, 86, .12]]); }
+      function saida(dur){ if (pode()) motor(dur, [[0, 86, .12], [.08, 150, .32], [.3, 220, .3], [.32, 160, .28], [.6, 240, .22], [1, 250, .001]]); }
       // freada de desenho: "iiiiiihhh" escorregando + pneu no asfalto
       function freio(){
         if (!pode()) return;

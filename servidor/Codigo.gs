@@ -11,7 +11,7 @@
 const ABA = "Renovações";
 const COLS = ["id","token","criado_em","status","responsavel","cpf","rg","celular","fone_casa","outro_fone","email",
               "rua","bairro","cidade","cep","alunos_texto","alunos_json","obs","data_cadastro",
-              "inicio_idx","mensalidade","parcelas","total","data_contrato","liberado_em","assinado_em","arquivo_url","observacao_interna"];
+              "inicio_idx","mensalidade","parcelas","total","data_contrato","liberado_em","assinado_em","arquivo_url","observacao_interna","tipo"];
 const STATUS = {AGUARDANDO:"aguardando_valor", LIBERADO:"liberado", ASSINADO:"assinado_online", IMPRESSO:"vai_entregar_impresso", RECEBIDO:"recebido", CANCELADO:"cancelado"};
 const FUSO = "America/Sao_Paulo";
 const SITE = "https://murilodannis123-lang.github.io/dannis-tur/";
@@ -57,10 +57,11 @@ function cadastrar_(d){
       fone_casa:limpa_(d.foneCasa,20), outro_fone:limpa_(d.outroFone,40), email:limpa_(d.email,80),
       rua:limpa_(d.rua,120), bairro:limpa_(d.bairro,60), cidade:limpa_(d.cidade,60), cep:limpa_(d.cep,9),
       alunos_texto: alunos.map(a => `${a.nome} (${fmt_(a.nasc)}) – ${a.escola} – ${a.periodo} – ${a.trajeto}`).join("\n"),
-      alunos_json: JSON.stringify(alunos), obs:limpa_(d.obs,500), data_cadastro: hoje_()
+      alunos_json: JSON.stringify(alunos), obs:limpa_(d.obs,500), data_cadastro: hoje_(),
+      tipo: d.tipo === "novo" ? "novo" : "renovacao"
     };
     sh.appendRow(COLS.map(c => linha[c] == null ? "" : linha[c]));
-    avisaDono_(`🚐 *Nova renovação 2027* (nº ${id})\n${linha.responsavel} – ${linha.celular}\n${alunos.map(a=>`• ${a.nome} – ${a.escola}`).join("\n")}\n\n👉 Colocar o valor e liberar:\n${SITE}admin.html#f=${id}`);
+    avisaDono_(`${linha.tipo === "novo" ? "🆕 *Contrato novo 2027*" : "🚐 *Nova renovação 2027*"} (nº ${id})\n${linha.responsavel} – ${linha.celular}\n${alunos.map(a=>`• ${a.nome} – ${a.escola}`).join("\n")}\n\n👉 Colocar o valor e liberar:\n${SITE}admin.html#f=${id}`);
     return {ok:true, token, id};
   } finally { lock.releaseLock(); }
 }
@@ -193,7 +194,13 @@ function configurar(){
 }
 
 /* ===================== utilidades ===================== */
-function aba_(){ const sh = planilha_().getSheetByName(ABA); if (!sh) throw erro_("Rode configurar() primeiro."); return sh; }
+function aba_(){
+  const sh = planilha_().getSheetByName(ABA); if (!sh) throw erro_("Rode configurar() primeiro.");
+  if (sh.getLastColumn() < COLS.length){   // coluna nova (ex.: "tipo") ganha título sozinha
+    sh.getRange(1,1,1,COLS.length).setValues([COLS]).setFontWeight("bold").setBackground("#712473").setFontColor("#ffffff");
+  }
+  return sh;
+}
 function pasta_(){
   const nome = "Danni's Tur – Contratos assinados";
   const it = DriveApp.getFoldersByName(nome);
@@ -237,7 +244,7 @@ function publico_(o){
   let alunos = []; try { alunos = JSON.parse(o.alunos_json || "[]"); } catch(e){}
   return {
     id:o.id, status:o.status, responsavel:o.responsavel, cpf:o.cpf, rg:o.rg, celular:o.celular, foneCasa:o.fone_casa, outroFone:o.outro_fone, email:o.email,
-    rua:o.rua, bairro:o.bairro, cidade:o.cidade, cep:o.cep, alunos, obs:o.obs, dataCadastro:String(o.data_cadastro||"").slice(0,10),
+    rua:o.rua, bairro:o.bairro, cidade:o.cidade, cep:o.cep, alunos, obs:o.obs, dataCadastro:String(o.data_cadastro||"").slice(0,10), tipo:o.tipo || "renovacao",
     valores:{ini:o.inicio_idx, mensalidade:o.mensalidade, parcelas:o.parcelas, total:o.total, dataContrato:String(o.data_contrato||"").slice(0,10)}
   };
 }
