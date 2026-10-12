@@ -273,3 +273,5 @@ img.van{height:auto}
 .fotos figure{margin:0;display:grid;gap:6px}
 .fotos img{width:100%;height:auto;border-radius:12px;display:block}
 .fotos figcaption{font-size:14px;color:var(--tinta-2);font-weight:600}
+.frota{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media (max-width:520px){.frota{grid-template-columns:1fr}}
