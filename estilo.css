@@ -265,3 +265,11 @@ input[type=number],input[type=password],input[type=search]{width:100%;border:1.5
 .contato{background:var(--roxo);color:#fff;border-radius:18px;padding:22px 18px;display:grid;gap:12px;justify-items:start}
 .contato h2{font-style:italic;font-weight:800;font-size:clamp(24px,5vw,30px)}
 .contato p{margin:0;color:#f1e6f1}
+
+/* van nova (imagem) na estrada, caricaturas e fotos da história */
+img.van{height:auto}
+.frota-item .carica{width:100%;height:190px;object-fit:contain;background:#fff;border-radius:10px}
+.fotos{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+.fotos figure{margin:0;display:grid;gap:6px}
+.fotos img{width:100%;height:auto;border-radius:12px;display:block}
+.fotos figcaption{font-size:14px;color:var(--tinta-2);font-weight:600}

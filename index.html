@@ -19,34 +19,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,600;0,800;1,700;1,800;1,900&family=Figtree:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="estilo.css?v=3">
+<link rel="stylesheet" href="estilo.css?v=5">
 <style>body{margin:0} main.inicio{padding-block:24px 40px} main.inicio > .wrap{display:grid;gap:26px}</style>
 </head>
 <body>
-
-<!-- desenho da van, usado na estrada e na frota -->
-<svg width="0" height="0" style="position:absolute" aria-hidden="true">
-  <symbol id="vanSym" viewBox="0 0 320 132">
-    <path d="M18 22 Q18 12 30 12 H222 Q238 12 250 26 L288 70 Q306 74 306 92 V104 Q306 110 300 110 H14 Q8 110 8 104 V30 Q8 22 18 22Z" fill="#ffffff" stroke="#1f1a21" stroke-width="2.5"/>
-    <rect x="22" y="22" width="44" height="32" rx="5" fill="#3d3550"/>
-    <rect x="72" y="22" width="44" height="32" rx="5" fill="#3d3550"/>
-    <rect x="122" y="22" width="44" height="32" rx="5" fill="#3d3550"/>
-    <rect x="172" y="22" width="42" height="32" rx="5" fill="#3d3550"/>
-    <path d="M222 22 H238 Q244 22 248 28 L272 56 H222Z" fill="#3d3550"/>
-    <rect x="8.5" y="60" width="285" height="20" fill="#ffc61a"/>
-    <rect x="8.5" y="58" width="285" height="3" fill="#1f1a21"/>
-    <rect x="8.5" y="79" width="285" height="3" fill="#1f1a21"/>
-    <text x="150" y="76" text-anchor="middle" font-family="Kanit, Arial Black, sans-serif" font-weight="800" font-size="16" letter-spacing="3" fill="#1f1a21">ESCOLAR</text>
-    <path d="M8.5 84 H304 V104 Q304 108 300 108 H14 Q8.5 108 8.5 104Z" fill="#712473"/>
-    <text x="112" y="101" font-family="Kanit, Arial Black, sans-serif" font-style="italic" font-weight="800" font-size="13" fill="#ffffff">Danni's</text>
-    <text x="167" y="101" font-family="Kanit, Arial Black, sans-serif" font-style="italic" font-weight="700" font-size="12" fill="#f4791f">Tur</text>
-    <path d="M292 76 Q302 78 304 86 H292Z" fill="#f4791f"/>
-    <rect x="4" y="40" width="6" height="14" rx="2" fill="#c2332b"/>
-    <circle cx="74" cy="110" r="18" fill="#1f1a21"/><circle cx="74" cy="110" r="8" fill="#cfc8d4"/>
-    <circle cx="252" cy="110" r="18" fill="#1f1a21"/><circle cx="252" cy="110" r="8" fill="#cfc8d4"/>
-  </symbol>
-</svg>
-
 <header class="hero">
   <img class="logo" src="logo.png" alt="Danni's Tur" width="750" height="160">
   <div class="slogan" aria-label="Vem com a gente!">VEM COM A GENTE<span>!!!</span></div>
@@ -55,7 +31,7 @@
 
 <div class="estrada" aria-hidden="true">
   <div class="rastro"><i></i><i></i><i></i></div>
-  <svg class="van" viewBox="0 0 320 132"><use href="#vanSym"/></svg>
+  <img class="van" src="img/van-dannis.svg" alt="" width="410" height="172">
 </div>
 
 <main class="inicio">
@@ -82,6 +58,10 @@
         <div class="selo"><b>25</b> anos de estrada</div>
         <div class="selo"><b>4</b> vans no escolar</div>
         <div class="selo"><b>Sumaré</b> e região</div>
+      </div>
+      <div class="fotos">
+        <figure><img src="img/kombi-antiga.jpg" alt="Kombi escolar branca com faixa amarela escrito ESCOLAR e DANI'S" width="1100" height="809" loading="lazy"><figcaption>Das antigas: a Kombi escolar da Dani's</figcaption></figure>
+        <figure><img src="img/frota.jpg" alt="Seis vans da Danni's Tur estacionadas lado a lado" width="960" height="539" loading="lazy"><figcaption>A frota da Danni's Tur</figcaption></figure>
       </div>
     </section>
 
@@ -129,17 +109,18 @@
   /* links antigos (…/dannis-tur/#renovar) vão direto pra renovação */
   if (location.hash === "#renovar") location.replace("renovacao.html");
 
-  /* frota: uma van por motorista */
+  /* frota: uma van por motorista, com a caricatura */
+  const da = v => /^Tio\b/.test(v.nome) ? "do" : "da";
   const FROTA = [
-    {nome:"Tia Cíntia", cor:"#f3e8f3"},
-    {nome:"Tio Daniel", cor:"#fdebdc"},
-    {nome:"Tia Joyce",  cor:"#e3eefb"},
-    {nome:"Tio Luiz",   cor:"#e2f3e8"}
+    {nome:"Tio Daniel", foto:"img/tio-daniel.jpg"},
+    {nome:"Tio Luiz",   foto:"img/tio-luiz.jpg"},
+    {nome:"Tia Joyce",  foto:"img/tia-joyce.jpg"},
+    {nome:"Tia Cíntia", foto:"img/tia-cintia.jpg"}
   ];
   $("#frota").innerHTML = FROTA.map(v => `
     <article class="frota-item">
-      <svg class="mini" viewBox="0 0 320 132" style="--c:${v.cor}" aria-hidden="true"><use href="#vanSym"/></svg>
-      <div><h3>Van ${/^Tio\b/.test(v.nome) ? "do" : "da"} ${esc(v.nome)}</h3><small>Motorista: ${esc(v.nome)}</small></div>
+      <img class="carica" src="${v.foto}" alt="Caricatura ${da(v)} ${esc(v.nome)} na van da Danni's" loading="lazy">
+      <div><h3>Van ${da(v)} ${esc(v.nome)}</h3><small>Motorista: ${esc(v.nome)}</small></div>
     </article>`).join("");
 
   $("#escolas").innerHTML = ESCOLAS.map(e => `<span class="${e.clara?"clara":""}" style="--c:${e.cor}">${esc(e.nome)}</span>`).join("");
