@@ -14,6 +14,7 @@ const COLS = ["id","token","criado_em","status","responsavel","cpf","rg","celula
               "inicio_idx","mensalidade","parcelas","total","data_contrato","liberado_em","assinado_em","arquivo_url","observacao_interna"];
 const STATUS = {AGUARDANDO:"aguardando_valor", LIBERADO:"liberado", ASSINADO:"assinado_online", IMPRESSO:"vai_entregar_impresso", RECEBIDO:"recebido", CANCELADO:"cancelado"};
 const FUSO = "America/Sao_Paulo";
+const SITE = "https://murilodannis123-lang.github.io/dannis-tur/";
 const PLANILHA_ID = "1luSn0_AEFnz38Q2SQsFvO0ZpnZv75azj107FUIKeBlQ";   // planilha "Danni's Tur – Renovações 2027"
 function planilha_(){ return SpreadsheetApp.openById(PLANILHA_ID); }
 
@@ -59,7 +60,7 @@ function cadastrar_(d){
       alunos_json: JSON.stringify(alunos), obs:limpa_(d.obs,500), data_cadastro: hoje_()
     };
     sh.appendRow(COLS.map(c => linha[c] == null ? "" : linha[c]));
-    avisaDono_(`🚐 *Nova renovação 2027* (nº ${id})\n${linha.responsavel} – ${linha.celular}\n${alunos.map(a=>`• ${a.nome} – ${a.escola}`).join("\n")}\n\nAbra a Área Danni's pra colocar o valor.`);
+    avisaDono_(`🚐 *Nova renovação 2027* (nº ${id})\n${linha.responsavel} – ${linha.celular}\n${alunos.map(a=>`• ${a.nome} – ${a.escola}`).join("\n")}\n\n👉 Colocar o valor e liberar:\n${SITE}admin.html#f=${id}`);
     return {ok:true, token, id};
   } finally { lock.releaseLock(); }
 }
@@ -138,26 +139,20 @@ function mudaStatus_(req){
 function avisarAniversariantes(){
   const agora = new Date();
   const hoje = Utilities.formatDate(agora, FUSO, "MM-dd");
-  const amanha = Utilities.formatDate(new Date(agora.getTime() + 864e5), FUSO, "MM-dd");
   const ano = Number(Utilities.formatDate(agora, FUSO, "yyyy"));
   const vals = aba_().getDataRange().getValues(); vals.shift();
-  const hojeL = [], amanhaL = [];
+  const hojeL = [];
   vals.filter(l => l[0] !== "").map(obj_).forEach(f => {
     if (f.status === STATUS.CANCELADO) return;
     let alunos = []; try { alunos = JSON.parse(f.alunos_json || "[]"); } catch(e){}
     alunos.forEach(a => {
-      if (!a.nasc) return;
-      const md = a.nasc.slice(5,10), anos = ano - Number(a.nasc.slice(0,4));
-      const t = `• *${a.nome}* faz ${anos} ${anos===1?"ano":"anos"} – ${a.escola}\n   Responsável: ${f.responsavel} ${f.celular}`;
-      if (md === hoje) hojeL.push(t); else if (md === amanha) amanhaL.push(t);
+      if (!a.nasc || a.nasc.slice(5,10) !== hoje) return;
+      const anos = ano - Number(a.nasc.slice(0,4));
+      hojeL.push(`• *${a.nome}* faz ${anos} ${anos===1?"ano":"anos"} – ${a.escola}\n   Responsável: ${f.responsavel} ${f.celular}`);
     });
   });
-  if (!hojeL.length && !amanhaL.length) return;
-  let msg = "";
-  if (hojeL.length) msg += `🎂 *Aniversariantes de hoje*\n${hojeL.join("\n")}\n\n`;
-  if (amanhaL.length) msg += `🎈 *Amanhã*\n${amanhaL.join("\n")}\n\n`;
-  msg += "Dá pra mandar os parabéns pela Área Danni's.";
-  avisaDono_(msg);
+  if (!hojeL.length) return;
+  avisaDono_(`🎂 *Aniversariantes de hoje*\n${hojeL.join("\n")}\n\nDá pra mandar os parabéns pela Área Danni's.`);
 }
 
 /* ===================== avisos ===================== */
@@ -192,7 +187,7 @@ function configurar(){
   if (!p.getProperty("EMAIL_AVISOS")) p.setProperty("EMAIL_AVISOS", Session.getEffectiveUser().getEmail());
   if (!p.getProperty("SENHA_ADMIN")) p.setProperty("SENHA_ADMIN", "TROQUE-ESTA-SENHA");
   ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === "avisarAniversariantes").forEach(t => ScriptApp.deleteTrigger(t));
-  ScriptApp.newTrigger("avisarAniversariantes").timeBased().atHour(7).everyDays(1).inTimezone(FUSO).create();
+  ScriptApp.newTrigger("avisarAniversariantes").timeBased().atHour(6).everyDays(1).inTimezone(FUSO).create();
   pasta_();
   return "Pronto. Agora troque a senha em Configurações do projeto › Propriedades do script.";
 }

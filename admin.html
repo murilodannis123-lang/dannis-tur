@@ -68,6 +68,7 @@ body{margin:0}
   <form class="card login" id="fLogin" novalidate>
     <h2 style="font-size:24px">Entrar</h2>
     <div class="campo"><label for="senha">Senha do administrador</label><input type="password" id="senha" autocomplete="current-password"></div>
+    <label class="check" style="font-size:14px"><input type="checkbox" id="lembrar"> Manter conectado neste celular (só no seu)</label>
     <p class="msg-err" id="loginErr" role="alert"></p>
     <button class="btn btn-pri" type="submit">Entrar</button>
   </form>
@@ -135,23 +136,24 @@ body{margin:0}
   const {api, API, esc, fmtData, brl, num, hojeISO, vigencia, nomeMes, INI, FIM, idade, zapLink, contratoHTML, preparaImpressao} = DT;
   const ss = {get(k){try{return sessionStorage.getItem(k)}catch(e){return null}}, set(k,v){try{sessionStorage.setItem(k,v)}catch(e){}}};
   const NOMES = {aguardando_valor:"Aguardando valor", liberado:"Liberado", vai_entregar_impresso:"Vai entregar impresso", assinado_online:"Assinado (gov.br)", recebido:"Recebido", cancelado:"Cancelado"};
-  let senha = ss.get("dt-senha") || "", familias = [], filtro = "todos", atual = null;
+  const lsl = {get(k){try{return localStorage.getItem(k)}catch(e){return null}}, set(k,v){try{v?localStorage.setItem(k,v):localStorage.removeItem(k)}catch(e){}}};
+  let senha = ss.get("dt-senha") || lsl.get("dt-senha-lembrar") || "", familias = [], filtro = "todos", atual = null;
 
   /* ---------- login ---------- */
   $("#fLogin").addEventListener("submit", async e=>{
     e.preventDefault(); senha = $("#senha").value; $("#loginErr").textContent = "";
     if (!API){ $("#loginErr").textContent = "O servidor (planilha) ainda não foi ligado. Siga o passo a passo do LEIA-ME."; return; }
-    try{ await api("admin_login", {senha}); ss.set("dt-senha", senha); entrar(); }
+    try{ await api("admin_login", {senha}); ss.set("dt-senha", senha); if ($("#lembrar").checked) lsl.set("dt-senha-lembrar", senha); entrar(); }
     catch(err){ $("#loginErr").textContent = err.codigo==="senha" ? "Senha errada." : (err.message || "Não consegui entrar."); }
   });
   async function entrar(){ $("#fLogin").hidden = true; $("#painel").hidden = false; await carregar(); }
 
   async function carregar(){
     $("#painelMsg").textContent = "Carregando…";
-    try{ const r = await api("admin_lista", {senha}); familias = r.familias.reverse(); $("#painelMsg").textContent = ""; desenha(); }
+    try{ const r = await api("admin_lista", {senha}); familias = r.familias.reverse(); $("#painelMsg").textContent = ""; desenha(); abrePeloLink(); }
     catch(e){ if (e.codigo==="senha"){ sair(); } else $("#painelMsg").textContent = "Não consegui carregar. Toque em Atualizar."; }
   }
-  function sair(){ ss.set("dt-senha",""); $("#painel").hidden = true; $("#detalhe").hidden = true; $("#fLogin").hidden = false; }
+  function sair(){ ss.set("dt-senha",""); lsl.set("dt-senha-lembrar",""); $("#painel").hidden = true; $("#detalhe").hidden = true; $("#fLogin").hidden = false; }
   $("#atualizar").onclick = carregar;
   $("#testeZap").onclick = async ()=>{
     $("#painelMsg").textContent = "Enviando teste…";
@@ -204,6 +206,12 @@ body{margin:0}
   /* ---------- detalhe ---------- */
   let ops = ""; for (let k=INI;k<=FIM;k++) ops += `<option value="${k}">${nomeMes(k)}</option>`; $("#xIni").innerHTML = ops;
   const linkContrato = f => DT.linkContrato(f.token);
+  /* link do aviso do WhatsApp (…/admin.html#f=12): abre direto na família, com o cursor no valor */
+  function abrePeloLink(){
+    const m = location.hash.match(/^#f=(\d+)$/); if (!m) return;
+    history.replaceState(null, "", location.pathname);
+    if (familias.some(f => String(f.id) === m[1])){ abrir(m[1]); setTimeout(() => { const c = $("#xPv"); c.scrollIntoView({block:"center"}); c.focus(); }, 150); }
+  }
   function abrir(id){
     atual = familias.find(f=>String(f.id)===String(id)); if (!atual) return;
     $("#painel").hidden = true; $("#detalhe").hidden = false; window.scrollTo(0,0);

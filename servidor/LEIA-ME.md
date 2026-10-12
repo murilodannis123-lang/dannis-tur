@@ -25,7 +25,7 @@ Use a conta **dannistur@gmail.com** (separada do Galera da Raquete).
 3. Você recebe uma chave (apikey). Coloque em `CALLMEBOT_CHAVE` (passo 1.5).
 4. Na Área Danni's, toque em **Testar aviso no meu WhatsApp**.
 
-Você vai receber aviso de: nova renovação, contrato assinado, família que vai entregar impresso e aniversariantes (todo dia às 7h, os de hoje e de amanhã). Cópia de tudo vai pro e-mail da conta.
+Você vai receber aviso de: nova renovação, contrato assinado, família que vai entregar impresso e aniversariantes do dia (todo dia entre 6h e 7h da manhã). Cópia de tudo vai pro e-mail da conta.
 
 ## O que fica onde
 
