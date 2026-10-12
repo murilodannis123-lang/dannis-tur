@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Danni's Tur · Onde está a van</title>
+<title>Danni's Tur · Onde está a van?</title>
 <meta name="description" content="Acompanhe a van escolar da Danni's Tur em tempo real.">
 <meta name="theme-color" content="#712473">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Danni's Van">
+<meta name="apple-mobile-web-app-title" content="Danni's Tur">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<link rel="manifest" href="manifest.json">
+<link rel="manifest" href="../manifest.json">
 <link rel="icon" href="icone-192.png">
 <link rel="apple-touch-icon" href="icone-app.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -34,7 +34,9 @@ h1,h2,h3{font-family:var(--f-display);margin:0;line-height:1.05;text-wrap:balanc
 button,input,select{font:inherit;color:inherit}
 :focus-visible{outline:3px solid var(--laranja);outline-offset:2px}
 .topo{display:flex;align-items:center;justify-content:space-between;gap:12px}
-.topo img{width:150px;height:auto}
+.topo img{width:130px;height:auto;display:block}
+.voltar{display:inline-flex;align-items:center;gap:4px;font-weight:700;font-size:15px;color:var(--roxo);text-decoration:none;padding:8px 14px 8px 8px;border-radius:999px;background:var(--roxo-claro)}
+.voltar svg{width:20px;height:20px}
 .tag{font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;background:var(--amarelo);padding:5px 10px;border-radius:999px}
 .titulo{display:grid;gap:4px}
 .titulo h2{font-size:28px;font-style:italic;font-weight:800;color:var(--roxo)}
@@ -107,8 +109,9 @@ input[type=text]:focus{outline:none;border-color:var(--roxo);box-shadow:0 0 0 3p
 <body>
 <div class="app">
   <header class="topo">
-    <img src="../logo.png" alt="Danni's Tur" width="750" height="160">
-    <span class="tag" id="tagModo">Teste</span>
+    <a class="voltar" href="../"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Início</a>
+    <span class="tag" id="tagModo" hidden>Motorista</span>
+    <a href="../" class="topo-logo"><img src="../logo.png" alt="Danni's Tur" width="750" height="160"></a>
   </header>
 
   <!-- PAIS: escolher van -->
@@ -194,7 +197,7 @@ input[type=text]:focus{outline:none;border-color:var(--roxo);box-shadow:0 0 0 3p
     <p class="dica">Durante a rota: não feche esta tela e não abra outro app (nem Waze). Se a tela apagar ou o app sair, os pais param de ver a van até você voltar aqui. Ligue o carregador.</p>
   </section>
 
-  <p class="rodape"><a href="#" id="trocaModo">Sou motorista</a> · <a href="../">Renovação 2027</a></p>
+  <p class="rodape"><a href="#" id="trocaModo">Sou motorista</a></p>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
@@ -244,7 +247,7 @@ input[type=text]:focus{outline:none;border-color:var(--roxo);box-shadow:0 0 0 3p
     $("#telaLista").hidden = modo!=="pais" || !!sessao;
     $("#telaMapa").hidden = modo!=="pais" || !sessao;
     $("#trocaModo").textContent = modo==="mot" ? "Sou pai/mãe" : "Sou motorista";
-    $("#tagModo").textContent = modo==="mot" ? "Motorista · teste" : "Teste";
+    $("#tagModo").hidden = modo!=="mot";
   }
   $("#trocaModo").onclick = e=>{ e.preventDefault(); modo = modo==="mot"?"pais":"mot"; history.replaceState(null,"",modo==="mot"?"#motorista":location.pathname); if(modo==="mot") fecharMapa(); aplicaModo(); };
 
@@ -423,7 +426,7 @@ input[type=text]:focus{outline:none;border-color:var(--roxo);box-shadow:0 0 0 3p
     $("#instDica").textContent = ios ? "No iPhone: toque no botão Compartilhar do Safari (quadrado com a seta) e depois em 'Adicionar à Tela de Início'."
                                      : "No Android: toque nos três pontinhos do Chrome e depois em 'Adicionar à tela inicial' ou 'Instalar app'.";
   };
-  if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(()=>{});
+  if ("serviceWorker" in navigator) navigator.serviceWorker.register("../sw.js", {scope:"../"}).catch(()=>{});
 
   /* ===================== MOTORISTA ===================== */
   let mot=null, watchId=null, rotaId=null, ultEnvio=null, enviadas=0, sentido="ida", wlMot=null, falhas=0;

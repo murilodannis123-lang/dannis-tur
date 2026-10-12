@@ -3,41 +3,36 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Renovação Danni's Tur 2027</title>
-<meta name="description" content="Renovação do transporte escolar Danni's Tur para 2027. 25 anos levando gerações em Sumaré. Vem com a gente!">
+<title>Danni's Tur · Transporte escolar em Sumaré</title>
+<meta name="description" content="Danni's Tur: transporte escolar em Sumaré há 25 anos, levando gerações. Renovação 2027 e acompanhamento da van. Vem com a gente!">
 <meta property="og:type" content="website">
-<meta property="og:title" content="Renovação 2027 · Danni's Tur">
-<meta property="og:description" content="Confirme a vaga do seu filho na van pra 2027. Vem com a gente!">
+<meta property="og:title" content="Danni's Tur · Transporte escolar">
+<meta property="og:description" content="Há 25 anos levando gerações em Sumaré. Vem com a gente!">
 <meta property="og:image" content="og.png">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#712473">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Danni's Tur">
+<link rel="manifest" href="manifest.json">
 <link rel="icon" href="icone.png">
-<link rel="apple-touch-icon" href="icone.png">
+<link rel="apple-touch-icon" href="van/icone-app.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,600;0,800;1,700;1,800;1,900&family=Figtree:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="estilo.css">
-<style>body{margin:0}</style>
+<style>body{margin:0} main.inicio{padding-block:24px 40px} main.inicio > .wrap{display:grid;gap:26px}</style>
 </head>
 <body>
 
-<header class="hero">
-  <img class="logo" src="logo.png" alt="Danni's Tur" width="750" height="160">
-  <div class="slogan" aria-label="Vem com a gente!">VEM COM A GENTE<span>!!!</span></div>
-  <p class="sub">Renovação do transporte escolar para o ano letivo de 2027</p>
-</header>
-
-<div class="estrada" aria-hidden="true">
-  <div class="rastro"><i></i><i></i><i></i></div>
-  <svg class="van" viewBox="0 0 320 132" xmlns="http://www.w3.org/2000/svg">
+<!-- desenho da van, usado na estrada e na frota -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="vanSym" viewBox="0 0 320 132">
     <path d="M18 22 Q18 12 30 12 H222 Q238 12 250 26 L288 70 Q306 74 306 92 V104 Q306 110 300 110 H14 Q8 110 8 104 V30 Q8 22 18 22Z" fill="#ffffff" stroke="#1f1a21" stroke-width="2.5"/>
     <rect x="22" y="22" width="44" height="32" rx="5" fill="#3d3550"/>
     <rect x="72" y="22" width="44" height="32" rx="5" fill="#3d3550"/>
     <rect x="122" y="22" width="44" height="32" rx="5" fill="#3d3550"/>
     <rect x="172" y="22" width="42" height="32" rx="5" fill="#3d3550"/>
     <path d="M222 22 H238 Q244 22 248 28 L272 56 H222Z" fill="#3d3550"/>
-    <rect x="26" y="25" width="12" height="26" rx="3" fill="#7b7290" opacity=".55"/>
-    <rect x="176" y="25" width="10" height="26" rx="3" fill="#7b7290" opacity=".55"/>
     <rect x="8.5" y="60" width="285" height="20" fill="#ffc61a"/>
     <rect x="8.5" y="58" width="285" height="3" fill="#1f1a21"/>
     <rect x="8.5" y="79" width="285" height="3" fill="#1f1a21"/>
@@ -45,133 +40,74 @@
     <path d="M8.5 84 H304 V104 Q304 108 300 108 H14 Q8.5 108 8.5 104Z" fill="#712473"/>
     <text x="112" y="101" font-family="Kanit, Arial Black, sans-serif" font-style="italic" font-weight="800" font-size="13" fill="#ffffff">Danni's</text>
     <text x="167" y="101" font-family="Kanit, Arial Black, sans-serif" font-style="italic" font-weight="700" font-size="12" fill="#f4791f">Tur</text>
-    <line x1="218" y1="16" x2="218" y2="84" stroke="#1f1a21" stroke-width="1.5" opacity=".5"/>
-    <rect x="204" y="64" width="10" height="3" rx="1.5" fill="#1f1a21"/>
     <path d="M292 76 Q302 78 304 86 H292Z" fill="#f4791f"/>
     <rect x="4" y="40" width="6" height="14" rx="2" fill="#c2332b"/>
-    <g class="roda"><circle cx="74" cy="110" r="18" fill="#1f1a21"/><circle cx="74" cy="110" r="8" fill="#cfc8d4"/><rect x="72.5" y="96" width="3" height="28" fill="#1f1a21" opacity=".5"/></g>
-    <g class="roda"><circle cx="252" cy="110" r="18" fill="#1f1a21"/><circle cx="252" cy="110" r="8" fill="#cfc8d4"/><rect x="250.5" y="96" width="3" height="28" fill="#1f1a21" opacity=".5"/></g>
-  </svg>
+    <circle cx="74" cy="110" r="18" fill="#1f1a21"/><circle cx="74" cy="110" r="8" fill="#cfc8d4"/>
+    <circle cx="252" cy="110" r="18" fill="#1f1a21"/><circle cx="252" cy="110" r="8" fill="#cfc8d4"/>
+  </symbol>
+</svg>
+
+<header class="hero">
+  <img class="logo" src="logo.png" alt="Danni's Tur" width="750" height="160">
+  <div class="slogan" aria-label="Vem com a gente!">VEM COM A GENTE<span>!!!</span></div>
+  <p class="sub">Transporte escolar em Sumaré há 25 anos</p>
+</header>
+
+<div class="estrada" aria-hidden="true">
+  <div class="rastro"><i></i><i></i><i></i></div>
+  <svg class="van" viewBox="0 0 320 132"><use href="#vanSym"/></svg>
 </div>
 
-<section class="historia">
+<main class="inicio">
   <div class="wrap">
-    <h2>Há <em>25 anos</em> levando gerações em Sumaré</h2>
-    <p>Muitos dos pais que hoje confiam os filhos à Danni's Tur foram, eles mesmos, alunos da nossa van. Transporte escolar é responsabilidade todos os dias: buscar na porta de casa, entregar na escola e trazer de volta com segurança.</p>
-    <div class="selos">
-      <div class="selo"><b>25</b> anos de estrada</div>
-      <div class="selo"><b>Sumaré</b> e região</div>
-      <div class="selo">Responsabilidade e segurança</div>
-    </div>
-  </div>
-</section>
 
-<main class="renova" id="renovar">
-  <div class="wrap">
-    <div class="titulo-sec">
-      <small>Ano letivo 2027</small>
-      <h2>Renove a vaga do seu filho</h2>
-      <p>Confirme que vai continuar com a gente. A Danni's Tur coloca o valor do seu caso e te avisa no WhatsApp quando o contrato estiver pronto pra assinar.</p>
+    <div class="inicio-acoes">
+      <a class="acao renov" href="renovacao.html">
+        <span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2.8h8.5L19 7.3v13.9H6z" fill="none" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"/><path d="M14.3 2.8v4.6H19" fill="none" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"/><path d="M8.8 14.2l2.4 2.4 4.4-4.8" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <span><b>Renovação 2027</b><small>Confirme a vaga do seu filho</small></span>
+        <svg class="seta" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+      <a class="acao vanbtn" href="van/">
+        <span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-6.5-6.2-6.5-11.2a6.5 6.5 0 0 1 13 0C18.5 14.8 12 21 12 21z" fill="none" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="9.8" r="2.4" fill="#ffc61a"/></svg></span>
+        <span><b>Onde está a van?</b><small>Acompanhe no mapa, em tempo real</small></span>
+        <svg class="seta" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
     </div>
 
-    <div class="card" style="gap:22px">
-      <div class="trajeto" aria-label="Etapas">
-        <div class="prog" id="prog" style="width:0"></div>
-        <div class="parada" data-p="1"><div class="placa">1</div>Escola</div>
-        <div class="parada" data-p="2"><div class="placa">2</div>Dados</div>
-        <div class="parada" data-p="3"><div class="placa">3</div>Confirmação</div>
+    <div class="abas" role="tablist" aria-label="Sobre a Danni's Tur">
+      <button type="button" role="tab" id="tab-historia" aria-controls="p-historia" aria-selected="true">Nossa história</button>
+      <button type="button" role="tab" id="tab-frota" aria-controls="p-frota" aria-selected="false" tabindex="-1">Frota</button>
+      <button type="button" role="tab" id="tab-escolas" aria-controls="p-escolas" aria-selected="false" tabindex="-1">Escolas</button>
+    </div>
+
+    <section class="painel" id="p-historia" role="tabpanel" aria-labelledby="tab-historia">
+      <h2>Há <em>25 anos</em> levando gerações em Sumaré</h2>
+      <p>Muitos dos pais que hoje confiam os filhos à Danni's Tur foram, eles mesmos, alunos da nossa van. Transporte escolar é responsabilidade todos os dias: buscar na porta de casa, entregar na escola e trazer de volta com segurança.</p>
+      <div class="selos claros">
+        <div class="selo"><b>25</b> anos de estrada</div>
+        <div class="selo"><b>4</b> vans no escolar</div>
+        <div class="selo"><b>Sumaré</b> e região</div>
       </div>
+    </section>
 
-      <!-- etapa 1: toque na escola e já segue -->
-      <section id="e1" aria-labelledby="t1" style="display:grid;gap:16px">
-        <h3 id="t1" style="font-size:22px">Qual a escola do aluno em 2027?</h3>
-        <div class="escolas" id="escolas"></div>
-        <div class="campo" id="outraWrap" hidden>
-          <label for="outraEscola">Nome da escola</label>
-          <div style="display:flex;gap:10px;flex-wrap:wrap">
-            <input type="text" id="outraEscola" placeholder="Digite o nome da escola" style="flex:1 1 200px;min-width:0">
-            <button class="btn btn-pri" type="button" id="irOutra">Continuar</button>
-          </div>
-          <p class="msg-err" id="e1Err" role="alert"></p>
-        </div>
-      </section>
+    <section class="painel" id="p-frota" role="tabpanel" aria-labelledby="tab-frota" hidden>
+      <h2>Nossa <em>frota</em></h2>
+      <p>São 4 vans no transporte escolar, cada uma com o seu motorista.</p>
+      <div class="frota" id="frota"></div>
+    </section>
 
-      <!-- etapa 2 -->
-      <form id="e2" hidden novalidate style="display:grid;gap:24px">
-        <fieldset>
-          <legend>Responsável (quem assina o contrato)</legend>
-          <div class="grade">
-            <div class="campo inteiro"><label for="rNome">Nome completo</label><input type="text" id="rNome" autocomplete="name" required></div>
-            <div class="campo"><label for="rCpf">CPF</label><input type="text" id="rCpf" inputmode="numeric" placeholder="000.000.000-00" required></div>
-            <div class="campo"><label for="rRg">RG</label><input type="text" id="rRg" required></div>
-            <div class="campo"><label for="rTel">Celular / WhatsApp</label><input type="tel" id="rTel" inputmode="tel" autocomplete="tel" placeholder="(19) 90000-0000" required></div>
-            <div class="campo"><label for="rCasa">Telefone de casa <span class="opc">(opcional)</span></label><input type="tel" id="rCasa" inputmode="tel" placeholder="(19) 0000-0000"></div>
-            <div class="campo"><label for="rOutro">Outro telefone <span class="opc">(opcional)</span></label><input type="tel" id="rOutro" inputmode="tel" placeholder="Avó, trabalho…"></div>
-            <div class="campo"><label for="rEmail">E-mail <span class="opc">(opcional)</span></label><input type="email" id="rEmail" autocomplete="email"></div>
-          </div>
-        </fieldset>
+    <section class="painel" id="p-escolas" role="tabpanel" aria-labelledby="tab-escolas" hidden>
+      <h2>Escolas que <em>atendemos</em></h2>
+      <div class="lista-escolas" id="escolas"></div>
+      <p>Sua escola não está na lista? Chama a gente no WhatsApp que a gente vê.</p>
+    </section>
 
-        <fieldset>
-          <legend>Endereço de embarque</legend>
-          <div class="grade">
-            <div class="campo inteiro"><label for="rEnd">Rua e número</label><input type="text" id="rEnd" autocomplete="street-address" required></div>
-            <div class="campo"><label for="rBairro">Bairro</label><input type="text" id="rBairro" required></div>
-            <div class="campo"><label for="rCep">CEP</label><input type="text" id="rCep" inputmode="numeric" autocomplete="postal-code" placeholder="13170-000" required></div>
-            <div class="campo inteiro"><label for="rCidade">Cidade</label><input type="text" id="rCidade" value="Sumaré" required></div>
-          </div>
-        </fieldset>
+    <section class="contato">
+      <h2>Fale com a Danni's Tur</h2>
+      <p>Vagas, horários, rotas e dúvidas sobre o contrato.</p>
+      <a class="btn btn-zap" href="https://wa.me/5519997781210" target="_blank" rel="noopener">WhatsApp (19) 99778-1210</a>
+    </section>
 
-        <fieldset>
-          <legend>Aluno(s)</legend>
-          <div id="alunos" style="display:grid;gap:14px"></div>
-          <button class="btn btn-sec" type="button" id="addAluno">+ Adicionar irmão(ã)</button>
-        </fieldset>
-
-        <fieldset>
-          <legend>Observações <span class="opc" style="font-family:var(--f-corpo);font-size:14px;font-weight:400;color:var(--tinta-2)">(opcional)</span></legend>
-          <div class="campo"><label for="obs" class="sr">Observações</label><textarea id="obs" rows="3" placeholder="Mudança de endereço, horário diferente, outro ponto de embarque…"></textarea></div>
-        </fieldset>
-
-        <p class="msg-err" id="e2Err" role="alert"></p>
-        <div class="acoes">
-          <button class="btn btn-link" type="button" id="volta1">Trocar escola</button>
-          <button class="btn btn-pri" type="submit">Revisar</button>
-        </div>
-      </form>
-
-      <!-- etapa 3 -->
-      <section id="e3" hidden style="display:grid;gap:16px">
-        <h3 style="font-size:22px">Confira os dados</h3>
-        <dl class="resumo" id="resumo"></dl>
-        <button type="button" class="ler-contrato" id="lerContrato">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2.8h8.5L19 7.3v13.9H6z" fill="#fff" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M14.3 2.8v4.6H19" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M8.6 11h7.8M8.6 13.8h7.8M8.6 16.6h4.6" stroke="#f4791f" stroke-width="1.5" stroke-linecap="round"/></svg>
-          <div><b>Ler o contrato 2027</b><span>Prévia com os seus dados. O valor entra depois, quando a Danni's Tur liberar.</span></div>
-        </button>
-        <label class="check"><input type="checkbox" id="aceite"> Li a prévia do contrato, confirmo que quero renovar o transporte escolar com a Danni's Tur para 2027 e autorizo o uso destes dados para o contrato.</label>
-        <p class="msg-err" id="e3Err" role="alert"></p>
-        <div class="acoes">
-          <button class="btn btn-link" type="button" id="volta2">Corrigir dados</button>
-          <button class="btn btn-pri" type="button" id="confirmar" disabled>Confirmar renovação</button>
-        </div>
-      </section>
-
-      <!-- sucesso -->
-      <section id="e4" class="sucesso" hidden style="display:grid;gap:18px">
-        <h3>Bora pra 2027!</h3>
-        <p id="sucTxt">Recebemos a sua renovação. A Danni's Tur vai colocar o valor do seu caso e te mandar o link do contrato no WhatsApp.</p>
-        <a class="btn btn-pri" id="linkContrato" href="#" hidden>Acompanhar meu contrato</a>
-        <a class="btn btn-zap" id="zap" href="#" target="_blank" rel="noopener" hidden>Enviar confirmação no WhatsApp</a>
-        <div class="box-assina">
-          <h4>Próximos passos</h4>
-          <ol class="passos">
-            <li><span>A Danni's Tur coloca o valor e libera o seu contrato. Você recebe o aviso no WhatsApp.</span></li>
-            <li><span>Abra o link do contrato e escolha: <b>imprimir e assinar</b> (entregue na van) ou <b>assinar pelo gov.br</b>.</span></li>
-            <li><span><b>gov.br:</b> baixe o PDF, entre em <b>assinador.iti.br</b> com sua conta gov.br (nível prata ou ouro), assine e envie o arquivo assinado pelo mesmo link.</span></li>
-          </ol>
-        </div>
-        <button class="btn btn-link" type="button" id="novo">Fazer outra renovação</button>
-      </section>
-    </div>
   </div>
 </main>
 
@@ -180,217 +116,71 @@
   <svg class="on" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
   <span>Música</span>
 </button>
-<audio id="musica" src="musica-dannis.mp3" loop preload="auto"></audio>
-
-<dialog id="dlg" aria-labelledby="dlgTit">
-  <div class="dlg-barra">
-    <b id="dlgTit">Prévia do contrato 2027</b>
-    <div class="bts"><button type="button" class="btn btn-sec" id="fecharDlg">Fechar</button></div>
-  </div>
-  <p class="dlg-nota">Prévia. O valor e a impressão ficam disponíveis quando a Danni's Tur liberar o seu contrato.</p>
-  <div id="dlgCorpo" class="marca-dagua" data-marca="PRÉVIA"></div>
-</dialog>
+<audio id="musica" src="musica-dannis.mp3" loop preload="none"></audio>
 
 <footer>
   <b>Danni's Tur</b>
   <span>Transporte escolar · Sumaré/SP</span>
-  <span>WhatsApp (19) 99778-1210</span>
   <span>Daniel Alves Gesualdo – ME · CNPJ 18.366.932/0001-18</span>
-  <a href="van/" style="color:#ffc61a;font-size:14px;font-weight:700">Onde está a van?</a>
   <a href="admin.html">Área Danni's</a>
 </footer>
-
-<div id="printArea"><p style="font:16px Arial;padding:40px;text-align:center">O contrato só pode ser impresso depois que a Danni's Tur liberar, pelo link do seu contrato.</p></div>
 
 <script src="comum.js"></script>
 <script>
 (function(){
   const $ = s => document.querySelector(s);
-  const {ESCOLAS, esc, fmtData, hojeISO, maskCpf, maskTel, cpfValido, contratoHTML, zapLink, api, API, ZAP_DANNIS} = DT;
-  const ls = {get(k){try{return localStorage.getItem(k)}catch(e){return null}}, set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+  const {ESCOLAS, esc} = DT;
 
-  /* ---------- etapas ---------- */
-  let primeira = true;
-  function mostrar(n){
-    ["e1","e2","e3","e4"].forEach((id,i)=>$("#"+id).hidden = n!==i+1);
-    document.querySelectorAll(".parada").forEach(p=>{ const i=+p.dataset.p; p.classList.toggle("ativa", i===n); p.classList.toggle("feita", i<n); });
-    $("#prog").style.width = (Math.min(n,3)-1)*33.4 + "%";
-    if (!primeira) $(".trajeto").scrollIntoView({behavior:"smooth",block:"start"});
-    primeira = false;
-  }
+  /* links antigos (…/dannis-tur/#renovar) vão direto pra renovação */
+  if (location.hash === "#renovar") location.replace("renovacao.html");
 
-  /* ---------- escolas: tocou, seguiu ---------- */
-  let escolaSel = null;
-  const nomeEscola = id => id==="outra" ? $("#outraEscola").value.trim() : (ESCOLAS.find(e=>e.id===id)||{}).nome;
-  [...ESCOLAS, {id:"outra", nome:"Outra escola"}].forEach(e=>{
-    const b = document.createElement("button");
-    b.type="button"; b.className = "escola" + (e.clara?" clara":"") + (e.id==="outra"?" outra":"");
-    if (e.cor) b.style.setProperty("--c", e.cor);
-    b.textContent = e.nome;
-    b.onclick = ()=>{
-      if (e.id==="outra"){ $("#outraWrap").hidden=false; $("#outraEscola").focus(); return; }
-      escolaSel = e.id; $("#outraWrap").hidden = true; irDados();
-    };
-    $("#escolas").appendChild(b);
-  });
-  $("#irOutra").onclick = ()=>{
-    if (!$("#outraEscola").value.trim()){ $("#e1Err").textContent="Digite o nome da escola."; return; }
-    $("#e1Err").textContent=""; escolaSel = "outra"; irDados();
-  };
-  $("#outraEscola").addEventListener("keydown", e=>{ if (e.key==="Enter"){ e.preventDefault(); $("#irOutra").click(); } });
-  function irDados(){
-    const primeiro = document.querySelector("#alunos .aluno");
-    if (primeiro){ primeiro.querySelector(".a-escola").value = escolaSel; primeiro.querySelector(".a-outra").value = escolaSel==="outra" ? $("#outraEscola").value.trim() : ""; atualizaOutra(primeiro); }
-    mostrar(2);
-    setTimeout(()=>$("#rNome").focus({preventScroll:true}), 400);
-  }
+  /* frota: uma van por motorista */
+  const FROTA = [
+    {nome:"Tia Cíntia", cor:"#f3e8f3"},
+    {nome:"Tio Daniel", cor:"#fdebdc"},
+    {nome:"Tia Joyce",  cor:"#e3eefb"},
+    {nome:"Tio Luiz",   cor:"#e2f3e8"}
+  ];
+  $("#frota").innerHTML = FROTA.map(v => `
+    <article class="frota-item">
+      <svg class="mini" viewBox="0 0 320 132" style="--c:${v.cor}" aria-hidden="true"><use href="#vanSym"/></svg>
+      <div><h3>Van ${/^Tio\b/.test(v.nome) ? "do" : "da"} ${esc(v.nome)}</h3><small>Motorista: ${esc(v.nome)}</small></div>
+    </article>`).join("");
 
-  /* ---------- alunos ---------- */
-  let nAluno = 0;
-  const opcoes = [...ESCOLAS, {id:"outra", nome:"Outra escola"}].map(e=>`<option value="${e.id}">${e.nome}</option>`).join("");
-  function atualizaOutra(c){ c.querySelector(".a-outra-wrap").hidden = c.querySelector(".a-escola").value!=="outra"; }
-  function addAluno(){
-    nAluno++; const id = "a"+nAluno;
-    const d = document.createElement("div"); d.className="aluno";
-    d.innerHTML = `
-      <div class="aluno-top"><h3>Aluno</h3>${nAluno>1?'<button type="button" class="btn btn-link a-rem">Remover</button>':''}</div>
-      <div class="grade">
-        <div class="campo inteiro"><label for="${id}n">Nome completo do aluno</label><input type="text" id="${id}n" class="a-nome" required></div>
-        <div class="campo"><label for="${id}d">Data de nascimento</label><input type="date" id="${id}d" class="a-nasc" required></div>
-        <div class="campo"><label for="${id}e">Escola</label><select id="${id}e" class="a-escola">${opcoes}</select></div>
-        <div class="campo inteiro a-outra-wrap" hidden><label for="${id}o">Nome da escola</label><input type="text" id="${id}o" class="a-outra"></div>
-        <div class="campo inteiro"><span style="font-weight:600;font-size:14px" id="${id}pl">Período</span>
-          <div class="chips a-per" role="radiogroup" aria-labelledby="${id}pl">
-            ${["Manhã","Tarde","Integral","Noite"].map(p=>`<label class="chip"><input type="radio" name="${id}p" value="${p}"><span>${p}</span></label>`).join("")}
-          </div>
-        </div>
-        <div class="campo inteiro"><span style="font-weight:600;font-size:14px" id="${id}tl">Trajeto</span>
-          <div class="chips" role="radiogroup" aria-labelledby="${id}tl">
-            ${["Ida e volta","Só ida","Só volta"].map((p,i)=>`<label class="chip"><input type="radio" name="${id}t" value="${p}" ${i===0?'checked':''}><span>${p}</span></label>`).join("")}
-          </div>
-        </div>
-      </div>`;
-    const sel = d.querySelector(".a-escola");
-    sel.value = escolaSel || ESCOLAS[0].id;
-    if (escolaSel==="outra") d.querySelector(".a-outra").value = $("#outraEscola").value.trim();
-    sel.addEventListener("change", ()=>atualizaOutra(d)); atualizaOutra(d);
-    const rem = d.querySelector(".a-rem"); if (rem) rem.onclick = ()=>{ d.remove(); renumera(); };
-    $("#alunos").appendChild(d); renumera(); return d;
-  }
-  function renumera(){ const cs = document.querySelectorAll("#alunos .aluno"); cs.forEach((c,i)=>c.querySelector("h3").textContent = cs.length>1?`Aluno ${i+1}`:"Aluno"); }
-  addAluno();
-  $("#addAluno").onclick = ()=>addAluno().querySelector(".a-nome").focus();
-  $("#volta1").onclick = ()=>mostrar(1);
-  $("#volta2").onclick = ()=>mostrar(2);
+  $("#escolas").innerHTML = ESCOLAS.map(e => `<span class="${e.clara?"clara":""}" style="--c:${e.cor}">${esc(e.nome)}</span>`).join("");
 
-  $("#rCpf").addEventListener("input", e=>e.target.value = maskCpf(e.target.value));
-  ["#rTel","#rCasa","#rOutro"].forEach(q=>$(q).addEventListener("input", e=>{ if(/^[\d()\s-]*$/.test(e.target.value)) e.target.value = maskTel(e.target.value); }));
-  $("#rCep").addEventListener("input", e=>{ let v=e.target.value.replace(/\D/g,"").slice(0,8); e.target.value = v.length>5 ? v.slice(0,5)+"-"+v.slice(5) : v; });
-
-  /* ---------- validação ---------- */
-  let dados = null;
-  const marca = (el, ok) => { el.closest(".campo")?.classList.toggle("err", !ok); return ok; };
-  $("#e2").addEventListener("submit", ev=>{
-    ev.preventDefault();
-    let ok = true, primeiro = null, motivo = "Preencha os campos destacados.";
-    const req = (el, c) => { if (!marca(el, c)){ ok=false; primeiro = primeiro || el; } };
-    req($("#rNome"), $("#rNome").value.trim().split(/\s+/).length>=2);
-    const cpfOk = cpfValido($("#rCpf").value); req($("#rCpf"), cpfOk); if (!cpfOk && $("#rCpf").value) motivo = "CPF inválido. Confira os números.";
-    req($("#rRg"), $("#rRg").value.replace(/\W/g,"").length>=5);
-    req($("#rTel"), $("#rTel").value.replace(/\D/g,"").length>=10);
-    req($("#rEnd"), !!$("#rEnd").value.trim());
-    req($("#rBairro"), !!$("#rBairro").value.trim());
-    req($("#rCep"), $("#rCep").value.replace(/\D/g,"").length===8);
-    req($("#rCidade"), !!$("#rCidade").value.trim());
-    const alunos = [];
-    document.querySelectorAll("#alunos .aluno").forEach(c=>{
-      const nome=c.querySelector(".a-nome"), nasc=c.querySelector(".a-nasc"), es=c.querySelector(".a-escola"), outra=c.querySelector(".a-outra");
-      const per = c.querySelector('input[name$="p"]:checked'), tr = c.querySelector('input[name$="t"]:checked');
-      req(nome, nome.value.trim().length>=3); req(nasc, !!nasc.value);
-      if (es.value==="outra") req(outra, !!outra.value.trim());
-      const chips = c.querySelector(".a-per");
-      if (!per){ ok=false; chips.style.outline="2px solid var(--erro)"; chips.style.outlineOffset="4px"; chips.style.borderRadius="999px"; primeiro = primeiro || chips; } else chips.style.outline="none";
-      alunos.push({nome:nome.value.trim(), nasc:nasc.value, escola: es.value==="outra" ? outra.value.trim() : (ESCOLAS.find(x=>x.id===es.value)||{}).nome, periodo: per?per.value:"", trajeto: tr?tr.value:"Ida e volta"});
+  /* abas */
+  const tabs = [...document.querySelectorAll('[role="tab"]')];
+  function abre(tab, foco){
+    tabs.forEach(t => {
+      const on = t === tab;
+      t.setAttribute("aria-selected", on); t.tabIndex = on ? 0 : -1;
+      document.getElementById(t.getAttribute("aria-controls")).hidden = !on;
     });
-    if (!ok){ $("#e2Err").textContent = motivo; primeiro?.scrollIntoView({behavior:"smooth",block:"center"}); primeiro?.focus?.(); return; }
-    $("#e2Err").textContent = "";
-    dados = {
-      responsavel:$("#rNome").value.trim(), cpf:$("#rCpf").value, rg:$("#rRg").value.trim(), celular:$("#rTel").value,
-      foneCasa:$("#rCasa").value.trim(), outroFone:$("#rOutro").value.trim(), email:$("#rEmail").value.trim(),
-      rua:$("#rEnd").value.trim(), bairro:$("#rBairro").value.trim(), cidade:$("#rCidade").value.trim(), cep:$("#rCep").value,
-      alunos, obs:$("#obs").value.trim(), dataCadastro:hojeISO()
-    };
-    resumo(); $("#aceite").checked=false; $("#confirmar").disabled=true; $("#e3Err").textContent=""; mostrar(3);
-  });
-  document.addEventListener("input", e=>{ if (e.target.closest("#e2")) marca(e.target, true); });
-  document.addEventListener("change", e=>{ if (e.target.type==="radio"){ const ch=e.target.closest(".chips"); if (ch) ch.style.outline="none"; } });
-
-  function resumo(){
-    const L = [["Responsável", dados.responsavel],["CPF / RG", `${dados.cpf} · RG ${dados.rg}`],
-      ["Telefones", [dados.celular, dados.foneCasa && `casa ${dados.foneCasa}`, dados.outroFone && `outro ${dados.outroFone}`].filter(Boolean).join(" · ")]];
-    if (dados.email) L.push(["E-mail", dados.email]);
-    L.push(["Endereço", `${dados.rua} – ${dados.bairro} – ${dados.cidade} – CEP ${dados.cep}`]);
-    dados.alunos.forEach((a,i)=>L.push([dados.alunos.length>1?`Aluno ${i+1}`:"Aluno", `${a.nome} · nasc. ${fmtData(a.nasc)}\n${a.escola} · ${a.periodo} · ${a.trajeto}`]));
-    if (dados.obs) L.push(["Observações", dados.obs]);
-    $("#resumo").innerHTML = L.map(([k,v])=>`<div><dt>${k}</dt><dd>${esc(v).replace(/\n/g,"<br>")}</dd></div>`).join("");
+    if (foco) tab.focus();
+    history.replaceState(null, "", "#" + tab.id.replace("tab-",""));
   }
-  $("#aceite").onchange = e=>$("#confirmar").disabled = !e.target.checked;
-
-  /* ---------- prévia do contrato (sem valor, sem impressão) ---------- */
-  const dlg = $("#dlg");
-  function abrirPrevia(){ $("#dlgCorpo").innerHTML = contratoHTML(dados, {}); dlg.showModal ? dlg.showModal() : dlg.setAttribute("open",""); dlg.scrollTop=0; }
-  $("#lerContrato").onclick = abrirPrevia;
-  $("#fecharDlg").onclick = ()=>dlg.close ? dlg.close() : dlg.removeAttribute("open");
-
-  /* ---------- confirmar ---------- */
-  function mensagem(){
-    let m = `*RENOVAÇÃO 2027 – DANNI'S TUR* 🚐\n\n*Responsável:* ${dados.responsavel}\n*CPF:* ${dados.cpf}\n*RG:* ${dados.rg}\n*Celular:* ${dados.celular}\n`;
-    if (dados.foneCasa) m += `*Fone casa:* ${dados.foneCasa}\n`;
-    if (dados.outroFone) m += `*Outro fone:* ${dados.outroFone}\n`;
-    if (dados.email) m += `*E-mail:* ${dados.email}\n`;
-    m += `*Endereço:* ${dados.rua}\n*Bairro:* ${dados.bairro}\n*Cidade:* ${dados.cidade}\n*CEP:* ${dados.cep}\n\n`;
-    dados.alunos.forEach((a,i)=>{ m += `*${dados.alunos.length>1?`Aluno ${i+1}`:"Aluno"}:* ${a.nome}\nNascimento: ${fmtData(a.nasc)}\nEscola: ${a.escola}\nPeríodo: ${a.periodo}\nTrajeto: ${a.trajeto}\n\n`; });
-    if (dados.obs) m += `*Observações:* ${dados.obs}\n\n`;
-    return m + "✅ Confirmo que quero renovar o transporte escolar para 2027.";
-  }
-  $("#confirmar").onclick = async ()=>{
-    const b = $("#confirmar"); b.disabled = true; b.textContent = "Enviando…"; $("#e3Err").textContent = "";
-    $("#linkContrato").hidden = true; $("#zap").hidden = true;
-    if (API){
-      try{
-        const r = await api("cadastrar", {dados});
-        const link = DT.linkContrato(r.token);
-        ls.set("dt-contrato", link);
-        $("#linkContrato").href = link; $("#linkContrato").hidden = false;
-        $("#sucTxt").textContent = "Recebemos a sua renovação! Guarde este link: é por ele que você acompanha, imprime ou assina o contrato. A Danni's Tur te avisa no WhatsApp quando o valor estiver colocado.";
-        $("#zap").href = zapLink(ZAP_DANNIS, `Oi! Acabei de renovar a van pra 2027 (${dados.responsavel}). Meu contrato: ${new URL(link, location.href).href}`);
-        $("#zap").textContent = "Avisar a Danni's Tur no WhatsApp (opcional)"; $("#zap").hidden = false;
-        mostrar(4);
-      }catch(e){
-        $("#e3Err").textContent = "Não consegui enviar agora. Confira a internet e toque de novo em Confirmar.";
+  tabs.forEach((t,i) => {
+    t.onclick = () => abre(t);
+    t.onkeydown = e => {
+      if (e.key === "ArrowRight" || e.key === "ArrowLeft"){
+        e.preventDefault(); abre(tabs[(i + (e.key === "ArrowRight" ? 1 : tabs.length - 1)) % tabs.length], true);
       }
-    } else {
-      $("#zap").href = zapLink(ZAP_DANNIS, mensagem()); $("#zap").textContent = "Enviar confirmação no WhatsApp"; $("#zap").hidden = false;
-      $("#sucTxt").textContent = "Agora toque no botão abaixo pra mandar a sua confirmação no WhatsApp da Danni's Tur.";
-      mostrar(4);
-    }
-    b.disabled = false; b.textContent = "Confirmar renovação";
-  };
-  $("#novo").onclick = ()=>{
-    $("#e2").reset(); $("#rCidade").value="Sumaré"; $("#alunos").innerHTML=""; nAluno=0; escolaSel=null; addAluno();
-    $("#outraWrap").hidden=true; $("#outraEscola").value=""; mostrar(1);
-  };
+    };
+  });
+  const inicial = document.getElementById("tab-" + location.hash.slice(1));
+  if (inicial) abre(inicial);
 
-  /* ---------- música ---------- */
+  /* música: começa no primeiro toque, botão liga/desliga */
   const musica = $("#musica"), som = $("#som"); musica.volume = .35;
   let desligou = false, primeiroToque = true;
-  const tocar = ()=>{ const p = musica.play(); if (p) p.catch(()=>{}); };
-  som.onclick = e=>{ e.stopPropagation(); primeiroToque=false; if (musica.paused){ desligou=false; tocar(); } else { desligou=true; musica.pause(); } };
-  document.addEventListener("pointerdown", ()=>{ if (primeiroToque && !desligou){ primeiroToque=false; tocar(); } });
-  musica.onplay = ()=>som.setAttribute("aria-pressed","true");
-  musica.onpause = ()=>som.setAttribute("aria-pressed","false");
+  const tocar = () => { const p = musica.play(); if (p) p.catch(()=>{}); };
+  som.onclick = e => { e.stopPropagation(); primeiroToque = false; if (musica.paused){ desligou = false; tocar(); } else { desligou = true; musica.pause(); } };
+  document.addEventListener("pointerdown", e => { if (e.target.closest("a")) return; if (primeiroToque && !desligou){ primeiroToque = false; tocar(); } });
+  musica.onplay = () => som.setAttribute("aria-pressed","true");
+  musica.onpause = () => som.setAttribute("aria-pressed","false");
 
-  mostrar(1); window.scrollTo(0,0);
+  if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(()=>{});
 })();
 </script>
 </body>

@@ -221,3 +221,47 @@ footer b{font-family:var(--f-display);font-style:italic;font-size:22px;color:var
 .aviso-box.ok{background:#e3f6ea;color:#14633a}
 .aviso-box.erro{background:#fde8e6;color:#8e231c}
 input[type=number],input[type=password],input[type=search]{width:100%;border:1.5px solid var(--linha);border-radius:10px;padding:11px 12px;background:#fff;color:var(--tinta)}
+
+/* ---------- barra de navegação (todas as páginas) ---------- */
+.barra{position:sticky;top:0;z-index:6;display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 -16px;padding:10px 16px;padding-top:calc(10px + env(safe-area-inset-top,0px));background:rgba(251,248,251,.94);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border-bottom:1px solid var(--linha)}
+.voltar{display:inline-flex;align-items:center;gap:4px;font-weight:700;font-size:15px;color:var(--roxo);text-decoration:none;padding:8px 14px 8px 8px;border-radius:999px;background:var(--roxo-claro);border:0;cursor:pointer}
+.voltar svg{width:20px;height:20px}
+.voltar:hover{background:#ead6ea}
+.barra-logo img{display:block;height:30px;width:auto}
+.trajeto{scroll-margin-top:80px}
+@media print{.barra{display:none!important}}
+
+/* ---------- início ---------- */
+.inicio-acoes{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-top:-6px}
+.acao{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:14px;text-decoration:none;color:#fff;border-radius:18px;padding:18px 18px;min-height:96px;box-shadow:0 5px 0 rgba(0,0,0,.18);transition:transform .12s,box-shadow .12s}
+.acao:hover{transform:translateY(-2px);box-shadow:0 7px 0 rgba(0,0,0,.18)}
+.acao:active{transform:translateY(2px);box-shadow:0 2px 0 rgba(0,0,0,.18)}
+.acao.renov{background:var(--laranja)}
+.acao.vanbtn{background:var(--roxo)}
+.acao .ic{width:52px;height:52px;border-radius:14px;background:rgba(255,255,255,.18);display:grid;place-items:center}
+.acao .ic svg{width:30px;height:30px}
+.acao b{display:block;font-family:var(--f-display);font-style:italic;font-weight:800;font-size:clamp(21px,5vw,25px);line-height:1.05}
+.acao small{display:block;font-size:14px;opacity:.92;margin-top:3px}
+.acao .seta{width:22px;height:22px;opacity:.85}
+
+.abas{display:flex;gap:6px;background:var(--roxo-claro);padding:5px;border-radius:999px;overflow-x:auto;scrollbar-width:none}
+.abas::-webkit-scrollbar{display:none}
+.abas button{flex:1 0 auto;appearance:none;border:0;background:none;border-radius:999px;padding:10px 16px;font-family:var(--f-display);font-weight:800;font-style:italic;font-size:17px;color:var(--roxo);cursor:pointer;white-space:nowrap}
+.abas button[aria-selected="true"]{background:var(--roxo);color:#fff}
+.painel{display:grid;gap:16px}
+.painel h2{font-size:clamp(26px,5.6vw,34px);font-weight:800;font-style:italic}
+.painel h2 em{color:var(--laranja);font-style:inherit}
+.painel p{margin:0;color:var(--tinta-2);max-width:62ch}
+.selos.claros .selo{background:var(--roxo-claro);border-color:transparent;color:var(--roxo)}
+.selos.claros .selo b{color:var(--laranja)}
+.frota{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.frota-item{background:var(--cartao);border:1px solid var(--linha);border-radius:var(--raio);padding:16px;display:grid;gap:10px;justify-items:start}
+.frota-item .mini{width:100%;height:auto;border-radius:10px;background:var(--c,#f3e8f3);padding:10px 8px 4px}
+.frota-item h3{font-size:21px;font-weight:800}
+.frota-item small{color:var(--tinta-2);font-size:14px}
+.lista-escolas{display:flex;flex-wrap:wrap;gap:8px}
+.lista-escolas span{border-radius:999px;padding:8px 14px;font-weight:700;font-size:15px;color:#fff;background:var(--c)}
+.lista-escolas span.clara{color:var(--tinta)}
+.contato{background:var(--roxo);color:#fff;border-radius:18px;padding:22px 18px;display:grid;gap:12px;justify-items:start}
+.contato h2{font-style:italic;font-weight:800;font-size:clamp(24px,5vw,30px)}
+.contato p{margin:0;color:#f1e6f1}
