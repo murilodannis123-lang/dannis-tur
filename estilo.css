@@ -311,3 +311,7 @@ img.van{height:auto}
 .fumo{background:radial-gradient(circle at 40% 40%,rgba(210,205,214,.7),rgba(165,159,172,.4) 55%,rgba(165,159,172,0) 72%)}
 .fumo.nuvem{animation-duration:4.2s;filter:blur(6px)}
 .fumo-txt{z-index:1}
+
+/* botão instalar o app */
+.acao.instalar{background:var(--roxo);border:0;font:inherit;text-align:left;cursor:pointer;width:100%}
+.dica-instalar{background:var(--roxo-claro);color:var(--roxo);border-radius:14px;padding:14px 16px;font-size:15px;line-height:1.45}
