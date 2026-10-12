@@ -19,7 +19,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,600;0,800;1,700;1,800;1,900&family=Figtree:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="estilo.css?v=10">
+<link rel="stylesheet" href="estilo.css?v=12">
 <style>body{margin:0} main.inicio{padding-block:24px 40px} main.inicio > .wrap{display:grid;gap:26px}</style>
 </head>
 <body>
@@ -30,7 +30,7 @@
 
 <div class="estrada" aria-hidden="true">
   <div class="van" id="van"><img src="img/van-dannis.svg" alt="" width="410" height="172"></div>
-  <div class="balao" id="balao"><b>25</b> anos!</div>
+  <div class="fumaca" id="fumaca"></div>
 </div>
 
 <main class="inicio">
@@ -128,7 +128,7 @@
 
   /* ---------- van na estrada: vem, freia (com som), espera e sai bem devagar ---------- */
   (async function vanNaEstrada(){
-    const box = $("#van"), estrada = box.parentElement, balao = $("#balao");
+    const box = $("#van"), estrada = box.parentElement, fumaca = $("#fumaca");
     const calmo = matchMedia("(prefers-reduced-motion: reduce)").matches;
     let rodas = [];
     try {   // coloca o desenho dentro da página pra girar as rodas de acordo com a velocidade
@@ -136,36 +136,66 @@
       box.innerHTML = txt.replace(/<style>[\s\S]*?<\/style>/, "");
       rodas = [...box.querySelectorAll(".roda")].map((g,i) => ({g, cx: i ? 330 : 92, cy: 146}));
     } catch(e){}
-    if (calmo){ balao.classList.add("on", "fixo"); return; }   // quem pediu menos movimento vê a van parada no meio, com o balão
+    if (calmo){ fumaca.innerHTML = '<div class="fumo-txt fixo">25 anos</div>'; return; }   // quem pediu menos movimento vê a van parada no meio
     estrada.classList.add("js");
     const T = {entra: 3400, parada: 2200, sai: 7600, vazio: 1400};
     const ciclo = T.entra + T.parada + T.sai + T.vazio;
     const outQuart = t => 1 - Math.pow(1 - t, 4), inQuad = t => t * t;
-    let t0 = performance.now(), freou = false, ultimoX = null, giro = 0;
+    let t0 = performance.now(), freou = false, saiu = false, ultimoX = null, giro = 0, ultFumo = 0;
     function quadro(agora){
       const W = estrada.clientWidth, w = box.offsetWidth, meio = (W - w) / 2, fora = -w - 20, fim = W + 20;
       const t = (agora - t0) % ciclo, volta = Math.floor((agora - t0) / ciclo);
-      if (volta !== quadro.v){ quadro.v = volta; freou = false; }
-      let x, incl = 0, parada = false;
+      if (volta !== quadro.v){ quadro.v = volta; freou = false; saiu = false; }
+      let x, incl = 0;
       if (t < T.entra){
         x = fora + (meio - fora) * outQuart(t / T.entra);
         if (!freou && t > T.entra - 1500){ freou = true; freio(); }
       } else if (t < T.entra + T.parada){
         x = meio; const d = (t - T.entra) / 450;           // "mergulho" do bico ao parar
         incl = d < 1 ? Math.sin(d * Math.PI) * 1.6 : 0;
-        parada = t > T.entra + 250 && t < T.entra + T.parada - 150;
       } else if (t < T.entra + T.parada + T.sai){
         x = meio + (fim - meio) * inQuad((t - T.entra - T.parada) / T.sai);
+        if (!saiu){ saiu = true; escreve25(x, w); }
       } else x = fim;
+      const andando = ultimoX !== null && Math.abs(x - ultimoX) > .15 && Math.abs(x - ultimoX) < W;
       if (ultimoX !== null && Math.abs(x - ultimoX) < W){ giro += (x - ultimoX) / (w * 21 / 410) * 57.3; }
       ultimoX = x;
       box.style.transform = `translateX(${x}px) rotate(${incl}deg)`;
-      balao.style.transform = `translateX(${x + w * .62}px)`; balao.classList.toggle("on", parada);
+      // fumaça cinza saindo do escapamento enquanto anda
+      if (andando && agora - ultFumo > 150 && x > -w * .9 && x < W){ ultFumo = agora; fumo(x + w * .02, w); }
       rodas.forEach(r => r.g.style.transform = `rotate(${(giro % 360).toFixed(1)}deg)`);
       requestAnimationFrame(quadro);
     }
     requestAnimationFrame(quadro);
     document.addEventListener("visibilitychange", () => { if (!document.hidden){ t0 = performance.now(); ultimoX = null; quadro.v = undefined; } });
+
+    /* fumaça: bolinhas cinza que crescem, sobem e somem */
+    function fumo(xEsc, w){
+      if (document.hidden) return;
+      const p = document.createElement("i"), tam = w * (.09 + Math.random() * .06);
+      p.className = "fumo";
+      p.style.cssText = `left:${xEsc - tam * .6}px;bottom:${14 + w * .1 + Math.random() * 6}px;width:${tam}px;height:${tam}px;--dx:${-(18 + Math.random() * 30)}px;--dy:${-(14 + Math.random() * 22)}px`;
+      fumaca.appendChild(p); p.addEventListener("animationend", () => p.remove());
+    }
+    /* quando a van sai, a fumaça escreve "25 anos" e depois evapora */
+    function escreve25(x, w){
+      if (document.hidden) return;
+      for (let i = 0; i < 9; i++) setTimeout(() => fumo(x + w * .02 - i * 6, w * 1.6), i * 70);
+      const txt = document.createElement("div"); txt.className = "fumo-txt";
+      txt.innerHTML = [..."25 anos"].map((c, i) => `<span style="--i:${i}">${c === " " ? "&nbsp;" : c}</span>`).join("");
+      txt.style.bottom = `${14 + box.offsetHeight * .9}px`;             // a fumaça sobe e escreve acima da van
+      fumaca.appendChild(txt);
+      txt.style.left = `${Math.max(8, Math.min(estrada.clientWidth - txt.offsetWidth - 8, x + w * .3 - txt.offsetWidth / 2))}px`;
+      const r = txt.getBoundingClientRect(), e = estrada.getBoundingClientRect();   // nuvem por trás das letras
+      for (let i = 0; i < 6; i++) setTimeout(() => nuvem(r.left - e.left + r.width * (i / 5), e.bottom - r.bottom - 6, r.height), 120 + i * 90);
+      setTimeout(() => txt.remove(), 5200);
+    }
+    function nuvem(cx, base, h){
+      const p = document.createElement("i"), tam = h * (1.1 + Math.random() * .5);
+      p.className = "fumo nuvem";
+      p.style.cssText = `left:${cx - tam / 2}px;bottom:${base}px;width:${tam}px;height:${tam}px;--dx:${-10 + Math.random() * 20}px;--dy:${-(10 + Math.random() * 16)}px`;
+      fumaca.appendChild(p); p.addEventListener("animationend", () => p.remove());
+    }
 
     /* som da freada (feito na hora, sem arquivo). Só toca depois do primeiro toque na tela e se o som não estiver desligado */
     let ac = null;

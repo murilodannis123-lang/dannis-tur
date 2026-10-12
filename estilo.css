@@ -297,3 +297,17 @@ img.van{height:auto}
 .balao::before{content:"";position:absolute;left:21px;bottom:-8px;border:5px solid transparent;border-top:7px solid #fff;border-bottom:0;transform:skewX(-20deg);z-index:1}
 .balao.on{opacity:1;scale:1}
 .balao.fixo{left:calc(50% + min(30px,8vw))}
+
+/* fumaça e o "25 anos" que evapora */
+.balao{display:none}
+.fumaca{position:absolute;inset:0;pointer-events:none;z-index:0}
+.fumo{position:absolute;border-radius:50%;background:radial-gradient(circle at 40% 40%,rgba(205,200,210,.85),rgba(160,154,168,.55) 55%,rgba(160,154,168,0) 72%);filter:blur(2px);animation:fumo 1.7s ease-out forwards}
+@keyframes fumo{0%{opacity:.85;transform:translate(0,0) scale(.35)}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(2.4)}}
+.fumo-txt{position:absolute;bottom:58px;font-family:var(--f-display);font-style:italic;font-weight:900;font-size:clamp(38px,9vw,58px);letter-spacing:1px;color:rgba(122,115,130,.9);text-shadow:0 0 10px rgba(170,164,176,.9),0 0 22px rgba(190,185,196,.8);white-space:nowrap}
+.fumo-txt span{display:inline-block;opacity:0;filter:blur(10px);animation:surge .7s ease-out calc(var(--i) * 60ms + .15s) forwards,evapora 1.6s ease-in calc(var(--i) * 90ms + 2.4s) forwards}
+@keyframes surge{to{opacity:1;filter:blur(0)}}
+@keyframes evapora{from{opacity:1;filter:blur(0);transform:translateY(0) scale(1)}to{opacity:0;filter:blur(12px);transform:translateY(-34px) scale(1.25)}}
+.fumo-txt.fixo{left:50%;transform:translateX(-50%);bottom:auto;top:4px;font-size:30px}
+.fumo{background:radial-gradient(circle at 40% 40%,rgba(210,205,214,.7),rgba(165,159,172,.4) 55%,rgba(165,159,172,0) 72%)}
+.fumo.nuvem{animation-duration:4.2s;filter:blur(6px)}
+.fumo-txt{z-index:1}
