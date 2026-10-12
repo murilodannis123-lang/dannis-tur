@@ -3,7 +3,7 @@
   "use strict";
 
   /* Endereço do servidor (Apps Script). Fica vazio até a planilha ser configurada. */
-  const API = "";
+  const API = "https://script.google.com/macros/s/AKfycbyHx9esXdbXC2xlKoavjhv3neJMw7M59cO9pm-rglWzvLLa5tPJrIEy3n4SOAsYFNuvIw/exec";
   const ZAP_DANNIS = "5519997781210";
 
   const CONTRATADO = {
