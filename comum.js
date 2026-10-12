@@ -124,6 +124,13 @@
     </article>`;
   }
 
+  /* link do contrato: curto pros códigos novos (…/contrato?K7M2PX9Q) */
+  function linkContrato(token, base){
+    const t = String(token||"");
+    const rel = t.length <= 12 ? "contrato?" + t : "contrato.html?c=" + encodeURIComponent(t);
+    return new URL(rel, base || location.href).href;
+  }
+
   /* ---------- servidor ---------- */
   async function api(acao, dados){
     if (!API) throw Object.assign(new Error("Servidor ainda não configurado."), {codigo:"sem_api"});
@@ -141,5 +148,5 @@
   }
 
   window.DT = {API, ZAP_DANNIS, CONTRATADO, ESCOLAS, MESES, INI, FIM, nomeMes, esc, fmtData, brl, num, hojeISO, vigencia, idade,
-               maskCpf, maskTel, cpfValido, soDigitos, zapLink, contratoHTML, api, preparaImpressao};
+               maskCpf, maskTel, cpfValido, soDigitos, zapLink, contratoHTML, api, preparaImpressao, linkContrato};
 })();

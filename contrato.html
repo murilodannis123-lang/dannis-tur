@@ -87,7 +87,8 @@ input[type=file]{width:100%;font-size:14px}
 (function(){
   const $ = s => document.querySelector(s);
   const {api, contratoHTML, esc, preparaImpressao} = DT;
-  const token = new URLSearchParams(location.search).get("c") || "";
+  const qs = new URLSearchParams(location.search);
+  const token = (qs.get("c") || (location.search.length > 1 && location.search.indexOf("=") < 0 ? decodeURIComponent(location.search.slice(1)) : "")).trim();
   let fam = null, liberado = false;
 
   async function carregar(){

@@ -359,7 +359,7 @@
     if (API){
       try{
         const r = await api("cadastrar", {dados});
-        const link = "contrato.html?c=" + encodeURIComponent(r.token);
+        const link = DT.linkContrato(r.token);
         ls.set("dt-contrato", link);
         $("#linkContrato").href = link; $("#linkContrato").hidden = false;
         $("#sucTxt").textContent = "Recebemos a sua renovação! Guarde este link: é por ele que você acompanha, imprime ou assina o contrato. A Danni's Tur te avisa no WhatsApp quando o valor estiver colocado.";

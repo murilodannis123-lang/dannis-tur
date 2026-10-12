@@ -203,7 +203,7 @@ body{margin:0}
 
   /* ---------- detalhe ---------- */
   let ops = ""; for (let k=INI;k<=FIM;k++) ops += `<option value="${k}">${nomeMes(k)}</option>`; $("#xIni").innerHTML = ops;
-  const linkContrato = f => new URL("contrato.html?c="+encodeURIComponent(f.token), location.href).href;
+  const linkContrato = f => DT.linkContrato(f.token);
   function abrir(id){
     atual = familias.find(f=>String(f.id)===String(id)); if (!atual) return;
     $("#painel").hidden = true; $("#detalhe").hidden = false; window.scrollTo(0,0);
@@ -235,7 +235,7 @@ body{margin:0}
     $("#bArquivo").hidden = !f.arquivo; if (f.arquivo) $("#bArquivo").href = f.arquivo;
     $("#bRecebido").hidden = !(f.status==="vai_entregar_impresso" || f.status==="liberado");
     $("#bCancelar").textContent = f.status==="cancelado" ? "Reativar esta renovação" : "Cancelar esta renovação";
-    if (lib) $("#bZap").href = zapLink(f.celular, `Olá, ${f.responsavel.split(" ")[0]}! 🚐 Seu contrato do transporte escolar 2027 da Danni's Tur está pronto.\n\nAbra o link pra conferir, imprimir ou assinar pelo gov.br:\n${linkContrato(f)}\n\nQualquer dúvida é só chamar. VEM COM A GENTE!`);
+    if (lib) $("#bZap").href = zapLink(f.celular, `Olá, ${f.responsavel.split(" ")[0]}! 🚐 Seu contrato do transporte escolar 2027 da Danni's Tur está pronto para assinatura:\n${linkContrato(f)}`);
   }
   function valores(){
     const pv = num($("#xPv").value), n = +$("#xParc").value || 0;

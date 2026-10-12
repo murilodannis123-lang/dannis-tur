@@ -48,7 +48,7 @@ function cadastrar_(d){
   try {
     const sh = aba_();
     const id = proximoId_(sh);
-    const token = "t" + Utilities.getUuid().replace(/-/g,"") + Utilities.getUuid().replace(/-/g,"").slice(0,8);
+    const token = novoCodigo_(sh);
     const alunos = d.alunos.slice(0,8).map(a => ({nome:limpa_(a.nome,80), nasc:limpa_(a.nasc,10), escola:limpa_(a.escola,60), periodo:limpa_(a.periodo,20), trajeto:limpa_(a.trajeto,20)}));
     const linha = {
       id, token, criado_em:agora_(), status:STATUS.AGUARDANDO,
@@ -207,10 +207,27 @@ function pasta_(){
 function proximoId_(sh){ const n = sh.getLastRow(); if (n < 2) return 1; const ids = sh.getRange(2,1,n-1,1).getValues().map(r => Number(r[0])||0); return Math.max.apply(null, ids) + 1; }
 function obj_(l){ const o = {}; COLS.forEach((c,i) => o[c] = (l[i] instanceof Date) ? Utilities.formatDate(l[i], FUSO, "yyyy-MM-dd'T'HH:mm:ss") : l[i]); return o; }
 function porToken_(t){
-  if (!t || String(t).length < 20) return null;
+  const q = String(t || "").trim();
+  if (q.length < 8) { Utilities.sleep(1000); return null; }
+  const curto = q.length <= 12, Q = q.toUpperCase();
   const vals = aba_().getDataRange().getValues();
-  for (let i = 1; i < vals.length; i++) if (vals[i][1] === t) return {linha:i+1, obj:obj_(vals[i])};
+  for (let i = 1; i < vals.length; i++){
+    const v = String(vals[i][1]);
+    if (v === q || (curto && v.toUpperCase() === Q)) return {linha:i+1, obj:obj_(vals[i])};
+  }
+  Utilities.sleep(1000);   // atrasa quem tenta adivinhar códigos
   return null;
+}
+/* código curto do link do contrato: 8 caracteres sem letras que confundem (0/O, 1/I/L) */
+function novoCodigo_(sh){
+  const ABC = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
+  const n = sh.getLastRow(), usados = n > 1 ? sh.getRange(2,2,n-1,1).getValues().map(r => String(r[0]).toUpperCase()) : [];
+  for (let k = 0; k < 20; k++){
+    const b = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, Utilities.getUuid());
+    let c = ""; for (let i = 0; i < 8; i++) c += ABC[(b[i] + 256) % ABC.length];
+    if (usados.indexOf(c) < 0) return c;
+  }
+  throw erro_("Não consegui gerar o código do contrato. Tente de novo.");
 }
 function porId_(id){
   const vals = aba_().getDataRange().getValues();
