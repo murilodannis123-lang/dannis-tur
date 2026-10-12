@@ -221,7 +221,7 @@ input[type=text]:focus{outline:none;border-color:var(--roxo);box-shadow:0 0 0 3p
   const VAN_URL = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(VAN_SVG);
 
   const $ = s => document.querySelector(s);
-  const ls = {get(k){try{return localStorage.getItem(k)}catch(e){return null}}, set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+  const ls = {get(k){try{return localStorage.getItem(k)}catch(e){return null}}, set(k,v){try{localStorage.setItem(k,v)}catch(e){}}, del(k){try{localStorage.removeItem(k)}catch(e){}}};
   async function sha(t){ const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(t)); return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join(""); }
   const normCod = c => c.toUpperCase().replace(/\s+/g,"").replace(/[–—_]/g,"-");
   async function validaCodigo(c){
@@ -249,7 +249,7 @@ input[type=text]:focus{outline:none;border-color:var(--roxo);box-shadow:0 0 0 3p
     $("#trocaModo").textContent = modo==="mot" ? "Sou pai/mãe" : "Sou motorista";
     $("#tagModo").hidden = modo!=="mot";
   }
-  $("#trocaModo").onclick = e=>{ e.preventDefault(); modo = modo==="mot"?"pais":"mot"; history.replaceState(null,"",modo==="mot"?"#motorista":location.pathname); if(modo==="mot") fecharMapa(); aplicaModo(); };
+  $("#trocaModo").onclick = e=>{ e.preventDefault(); modo = modo==="mot"?"pais":"mot"; history.replaceState(null,"",modo==="mot"?"#motorista":location.pathname+"#pais"); if(modo==="mot") fecharMapa(); aplicaModo(); };
 
   /* ===================== PAIS ===================== */
   let sessao = null, vanEscolhida = null;
@@ -259,7 +259,7 @@ input[type=text]:focus{outline:none;border-color:var(--roxo);box-shadow:0 0 0 3p
     b.onclick = async ()=>{
       destravaSom();
       const salvo = ls.get("dt-cod-"+v.id);
-      if (salvo){ const ok = await validaCodigo(salvo); if (ok && ok.van.id===v.id) return abrirMapa(ok); }
+      if (salvo){ const ok = await validaCodigo(salvo); if (ok && ok.van.id===v.id){ ls.set("dt-ultima", v.id); return abrirMapa(ok); } }
       vanEscolhida = v; $("#fCod").hidden=false; $("#codLabel").textContent=`Código da van ${da(v)} ${v.nome}`; $("#codErr").textContent=""; $("#cod").value=""; $("#cod").focus();
     };
     $("#vans").appendChild(b);
@@ -269,7 +269,7 @@ input[type=text]:focus{outline:none;border-color:var(--roxo);box-shadow:0 0 0 3p
     const ok = await validaCodigo($("#cod").value);
     if (!ok){ $("#codErr").textContent = "Código errado. Confira a mensagem da Danni's Tur."; return; }
     if (vanEscolhida && ok.van.id!==vanEscolhida.id){ $("#codErr").textContent = `Esse código é da van ${da(ok.van)} ${ok.van.nome}.`; return; }
-    ls.set("dt-cod-"+ok.van.id, ok.codigo); abrirMapa(ok);
+    ls.set("dt-cod-"+ok.van.id, ok.codigo); ls.set("dt-ultima", ok.van.id); abrirMapa(ok);
   });
 
   let mapa=null, mkVan=null, mkCasa=null, rastro=null, fonte=null, ultimo=null, hist=[], alertado=null, somAtivo=false, tick=0;
@@ -321,7 +321,7 @@ input[type=text]:focus{outline:none;border-color:var(--roxo);box-shadow:0 0 0 3p
     clearInterval(tick); tick = setInterval(atualiza, 5000);
   }
   function fecharMapa(){ if (fonte){ fonte.close(); fonte=null; } clearInterval(tick); sessao=null; }
-  $("#voltar").onclick = ()=>{ fecharMapa(); aplicaModo(); };
+  $("#voltar").onclick = ()=>{ ls.del("dt-ultima"); fecharMapa(); aplicaModo(); };
 
   async function conecta(){
     if (fonte) fonte.close();
@@ -434,10 +434,35 @@ input[type=text]:focus{outline:none;border-color:var(--roxo);box-shadow:0 0 0 3p
     e.preventDefault();
     const ok = await validaCodigo($("#mCod").value);
     if (!ok){ $("#mErr").textContent="Código errado."; return; }
-    mot = ok; ls.set("dt-mot", ok.codigo);
-    $("#fMot").hidden = true; $("#motPainel").hidden = false; $("#motTit").textContent = `Van ${da(ok.van)} ${ok.van.nome}`;
+    entraMot(ok);
   });
-  (async ()=>{ const s = ls.get("dt-mot"); if (s){ const ok = await validaCodigo(s); if (ok){ $("#mCod").value = ok.codigo; } } })();
+  function entraMot(ok){
+    mot = ok; ls.set("dt-mot", ok.codigo); $("#mCod").value = ok.codigo;
+    $("#fMot").hidden = true; $("#motPainel").hidden = false; $("#motTit").textContent = `Van ${da(ok.van)} ${ok.van.nome}`;
+  }
+  /* ===== atalhos: link direto da van (?v=CÓDIGO), do motorista (?m=CÓDIGO) e celular que já usou ===== */
+  (async ()=>{
+    const qs = new URLSearchParams(location.search), pv = qs.get("v"), pm = qs.get("m");
+    if (pv || pm) history.replaceState(null, "", location.pathname + (pm ? "#motorista" : ""));   // tira o código da barra de endereço
+    if (pm){
+      const ok = await validaCodigo(pm);
+      modo = "mot"; aplicaModo();
+      if (ok) return entraMot(ok);
+      $("#mErr").textContent = "Esse link de motorista não vale mais. Peça o novo pra Danni's Tur."; return;
+    }
+    if (pv){
+      const ok = await validaCodigo(pv);
+      modo = "pais"; aplicaModo();
+      if (ok){ ls.set("dt-cod-"+ok.van.id, ok.codigo); ls.set("dt-ultima", ok.van.id); return abrirMapa(ok); }
+      $("#fCod").hidden = false; $("#codErr").textContent = "Esse link não vale mais. Peça o novo pra Danni's Tur ou digite o código."; return;
+    }
+    const sMot = ls.get("dt-mot"), ult = ls.get("dt-ultima"), sVan = ult && ls.get("dt-cod-"+ult);
+    if (modo === "mot" || (sMot && !sVan && location.hash !== "#pais")){
+      if (sMot){ const ok = await validaCodigo(sMot); if (ok){ modo = "mot"; history.replaceState(null, "", location.pathname + "#motorista"); aplicaModo(); return entraMot(ok); } }
+      return;
+    }
+    if (sVan){ const ok = await validaCodigo(sVan); if (ok) return abrirMapa(ok); }
+  })();
   document.querySelectorAll(".mot .seg button").forEach(b=>b.onclick=()=>{ if (watchId!==null) return; sentido=b.dataset.s; document.querySelectorAll(".mot .seg button").forEach(x=>x.setAttribute("aria-pressed", x===b)); });
 
   async function publica(obj){
