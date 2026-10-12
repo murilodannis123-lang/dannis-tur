@@ -275,3 +275,14 @@ img.van{height:auto}
 .fotos figcaption{font-size:14px;color:var(--tinta-2);font-weight:600}
 .frota{grid-template-columns:repeat(2,minmax(0,1fr))}
 @media (max-width:520px){.frota{grid-template-columns:1fr}}
+
+/* van da estrada controlada pelo início (vem, freia, para e sai devagar) */
+#van{animation:none;width:min(300px,72vw);left:calc(50% - min(150px,36vw));transform-origin:70% 100%}
+.estrada.js #van{left:0;will-change:transform}
+#van img,#van svg{display:block;width:100%;height:auto}
+#van .roda{animation:none!important;transform-box:fill-box;transform-origin:center}
+.motoristas{display:grid;gap:14px}
+.motoristas h2{font-size:clamp(26px,5.6vw,34px);font-weight:800;font-style:italic}
+.motoristas h2 em{color:var(--laranja);font-style:inherit}
+.foto-frota{margin:0}
+.foto-frota img{width:100%;height:auto;border-radius:14px;display:block}
