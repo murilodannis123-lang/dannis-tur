@@ -131,6 +131,28 @@
     return new URL(rel, base || location.href).href;
   }
 
+  /* música de fundo: começa no primeiro toque na tela (menos no botão); se a pessoa desligar,
+     fica desligada em todas as páginas e nas próximas visitas */
+  function musica(audio, botao){
+    if (!audio || !botao) return;
+    const K = "dt-musica";
+    const pref = () => { try { return localStorage.getItem(K); } catch(e){ return null; } };
+    const grava = v => { try { localStorage.setItem(K, v); } catch(e){} };
+    audio.volume = .35;
+    let iniciou = false;
+    const tocar = () => { const p = audio.play(); if (p) p.catch(()=>{}); };
+    botao.addEventListener("click", e => {
+      e.stopPropagation(); iniciou = true;
+      if (audio.paused){ grava("on"); tocar(); } else { grava("off"); audio.pause(); }
+    });
+    document.addEventListener("pointerdown", e => {
+      if (iniciou || e.target.closest("#" + botao.id) || pref() === "off") return;
+      iniciou = true; tocar();
+    });
+    audio.onplay = () => botao.setAttribute("aria-pressed", "true");
+    audio.onpause = () => botao.setAttribute("aria-pressed", "false");
+  }
+
   /* ---------- servidor ---------- */
   async function api(acao, dados){
     if (!API) throw Object.assign(new Error("Servidor ainda não configurado."), {codigo:"sem_api"});
@@ -148,5 +170,5 @@
   }
 
   window.DT = {API, ZAP_DANNIS, CONTRATADO, ESCOLAS, MESES, INI, FIM, nomeMes, esc, fmtData, brl, num, hojeISO, vigencia, idade,
-               maskCpf, maskTel, cpfValido, soDigitos, zapLink, contratoHTML, api, preparaImpressao, linkContrato};
+               maskCpf, maskTel, cpfValido, soDigitos, zapLink, contratoHTML, api, preparaImpressao, linkContrato, musica};
 })();

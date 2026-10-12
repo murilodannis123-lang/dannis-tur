@@ -125,7 +125,7 @@
   <a href="admin.html">Área Danni's</a>
 </footer>
 
-<script src="comum.js?v=3"></script>
+<script src="comum.js?v=4"></script>
 <script>
 (function(){
   const $ = s => document.querySelector(s);
@@ -172,13 +172,7 @@
   if (inicial) abre(inicial);
 
   /* música: começa no primeiro toque, botão liga/desliga */
-  const musica = $("#musica"), som = $("#som"); musica.volume = .35;
-  let desligou = false, primeiroToque = true;
-  const tocar = () => { const p = musica.play(); if (p) p.catch(()=>{}); };
-  som.onclick = e => { e.stopPropagation(); primeiroToque = false; if (musica.paused){ desligou = false; tocar(); } else { desligou = true; musica.pause(); } };
-  document.addEventListener("pointerdown", e => { if (e.target.closest("a")) return; if (primeiroToque && !desligou){ primeiroToque = false; tocar(); } });
-  musica.onplay = () => som.setAttribute("aria-pressed","true");
-  musica.onpause = () => som.setAttribute("aria-pressed","false");
+  DT.musica($("#musica"), $("#som"));
 
   if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(()=>{});
 })();

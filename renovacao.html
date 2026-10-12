@@ -163,7 +163,7 @@
 
 <div id="printArea"><p style="font:16px Arial;padding:40px;text-align:center">O contrato só pode ser impresso depois que a Danni's Tur liberar, pelo link do seu contrato.</p></div>
 
-<script src="comum.js?v=3"></script>
+<script src="comum.js?v=4"></script>
 <script>
 (function(){
   const $ = s => document.querySelector(s);
@@ -343,13 +343,7 @@
   };
 
   /* ---------- música ---------- */
-  const musica = $("#musica"), som = $("#som"); musica.volume = .35;
-  let desligou = false, primeiroToque = true;
-  const tocar = ()=>{ const p = musica.play(); if (p) p.catch(()=>{}); };
-  som.onclick = e=>{ e.stopPropagation(); primeiroToque=false; if (musica.paused){ desligou=false; tocar(); } else { desligou=true; musica.pause(); } };
-  document.addEventListener("pointerdown", ()=>{ if (primeiroToque && !desligou){ primeiroToque=false; tocar(); } });
-  musica.onplay = ()=>som.setAttribute("aria-pressed","true");
-  musica.onpause = ()=>som.setAttribute("aria-pressed","false");
+  DT.musica($("#musica"), $("#som"));
 
   mostrar(1); window.scrollTo(0,0);
 })();
