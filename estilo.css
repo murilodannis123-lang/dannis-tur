@@ -323,3 +323,6 @@ img.van{height:auto}
 .acao.quad .ic{width:46px;height:46px}
 .acao.quad b{font-size:clamp(19px,4.8vw,24px)}
 .acao.novo{background:#1677c9}
+
+.texto-historia{display:grid;gap:12px}
+.texto-historia p{margin:0;color:var(--tinta-2);max-width:62ch;font-size:16.5px;line-height:1.6}
