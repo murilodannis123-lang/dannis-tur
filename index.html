@@ -232,7 +232,7 @@
         if (musica || !bufM || !ac || ac.state !== "running" || document.hidden) return;
         const f = ac.createBufferSource(), g = ac.createGain();
         f.buffer = bufM; f.loop = true; f.loopStart = 0; f.loopEnd = Math.min(bufM.duration, 64 * 60 / 112);
-        g.gain.value = .32; f.connect(g); g.connect(mestre); f.start(); musica = f;
+        g.gain.value = .13; f.connect(g); g.connect(mestre); f.start(); musica = f;
       }
       function acorda(){
         try {
