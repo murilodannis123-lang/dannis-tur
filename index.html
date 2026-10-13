@@ -218,13 +218,21 @@
        motor chegando, chiado do freio, "tsssh" do freio a ar, buzina "fóm-fóm" e motor saindo.
        Toca depois do primeiro toque na tela; o botão "Som" liga e desliga (fica lembrado) */
     function criaSom(){
-      let ac = null, mestre = null, buf = null, fonte = null, carregando = false;
+      let ac = null, mestre = null, buf = null, fonte = null, carregando = false, bufM = null, musica = null;
       const ligado = () => { try { return localStorage.getItem("dt-som") !== "off"; } catch(e){ return true; } };
       const grava = v => { try { localStorage.setItem("dt-som", v); } catch(e){} };
       async function carrega(){
         if (buf || carregando || !ac) return; carregando = true;
         try { const a = await (await fetch("som-onibus.mp3?v=3")).arrayBuffer(); buf = await new Promise((ok, erro) => ac.decodeAudioData(a, ok, erro)); }
         catch(e){ carregando = false; }
+        try { const a = await (await fetch("musica-fofa.mp3?v=1")).arrayBuffer(); bufM = await new Promise((ok, erro) => ac.decodeAudioData(a, ok, erro)); } catch(e){}
+      }
+      // musiquinha infantil original (caixinha de música) de fundo, baixinha, repetindo sem emenda
+      function tocaMusica(){
+        if (musica || !bufM || !ac || ac.state !== "running" || document.hidden) return;
+        const f = ac.createBufferSource(), g = ac.createGain();
+        f.buffer = bufM; f.loop = true; f.loopStart = 0; f.loopEnd = Math.min(bufM.duration, 64 * 60 / 112);
+        g.gain.value = .32; f.connect(g); g.connect(mestre); f.start(); musica = f;
       }
       function acorda(){
         try {
@@ -238,7 +246,9 @@
       }
       ["pointerdown", "touchend", "click", "keydown"].forEach(ev => document.addEventListener(ev, acorda, {passive:true}));
       function para(){ if (fonte){ try { fonte.stop(); } catch(e){} fonte = null; } }
+      document.addEventListener("visibilitychange", () => { if (document.hidden && musica){ try { musica.stop(); } catch(e){} musica = null; } });
       function toca(seg, dur){   // começa o som no segundo "seg" da volta
+        tocaMusica();
         if (fonte || !buf || !ac || ac.state !== "running" || document.hidden) return;
         if (dur === undefined && seg > buf.duration - 1.5) return;
         const f = ac.createBufferSource(); f.buffer = buf; f.connect(mestre);
