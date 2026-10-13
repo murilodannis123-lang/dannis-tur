@@ -223,7 +223,7 @@
       const grava = v => { try { localStorage.setItem("dt-som", v); } catch(e){} };
       async function carrega(){
         if (buf || carregando || !ac) return; carregando = true;
-        try { const a = await (await fetch("som-onibus.mp3?v=2")).arrayBuffer(); buf = await new Promise((ok, erro) => ac.decodeAudioData(a, ok, erro)); }
+        try { const a = await (await fetch("som-onibus.mp3?v=3")).arrayBuffer(); buf = await new Promise((ok, erro) => ac.decodeAudioData(a, ok, erro)); }
         catch(e){ carregando = false; }
       }
       function acorda(){
