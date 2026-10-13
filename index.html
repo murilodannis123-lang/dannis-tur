@@ -174,7 +174,7 @@
         incl = d < 1 ? Math.sin(d * Math.PI) * 1.6 : 0;
       } else if (t < T.entra + T.parada + T.sai){
         x = meio + (fim - meio) * inQuad((t - T.entra - T.parada) / T.sai);
-        if (!saiu){ saiu = true; escreve25(x, w); som.saida(T.sai / 1000); }
+        if (!saiu){ saiu = true; escreve25(x, w); som.saida(T.sai / 1000); setTimeout(som.brilho, 350); }
       } else x = fim;
       const andando = ultimoX !== null && Math.abs(x - ultimoX) > .15 && Math.abs(x - ultimoX) < W;
       if (ultimoX !== null && Math.abs(x - ultimoX) < W){ giro += (x - ultimoX) / (w * 21 / 410) * 57.3; }
@@ -246,63 +246,74 @@
         for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
         const s = ac.createBufferSource(); s.buffer = n; return s;
       }
-      // ronco do motor: serra + quadrada graves, filtradas, com o "tuc-tuc" dos cilindros
+      // motorzinho de brinquedo: "puc-puc-puc" (quadrada + triângulo em tom médio, pulsando)
       function motor(dur, pontos){   // pontos: [[tempo 0..1, freq, volume], ...]
         const t = ac.currentTime, o1 = ac.createOscillator(), o2 = ac.createOscillator(), lp = ac.createBiquadFilter();
-        const g = ac.createGain(), g2 = ac.createGain(), am = ac.createOscillator(), amg = ac.createGain(), vol = ac.createGain();
-        o1.type = "sawtooth"; o2.type = "square"; g2.gain.value = .45; lp.type = "lowpass"; lp.frequency.value = 1300; lp.Q.value = 2;
-        am.type = "square"; amg.gain.value = .35; g.gain.value = .65;
+        const g = ac.createGain(), am = ac.createOscillator(), amg = ac.createGain(), vol = ac.createGain();
+        o1.type = "square"; o2.type = "triangle"; lp.type = "lowpass"; lp.frequency.value = 2200; lp.Q.value = 4;
+        am.type = "sine"; amg.gain.value = .5; g.gain.value = .5;
         pontos.forEach(([p, f, v], i) => {
           const tt = t + p * dur, m = i ? "exponentialRampToValueAtTime" : "setValueAtTime";
-          o1.frequency[m](f, tt); o2.frequency[m](f / 2, tt); am.frequency[m](f / 3, tt);
+          o1.frequency[m](f, tt); o2.frequency[m](f * 2.01, tt); am.frequency[m](Math.max(5, f / 22), tt);
           vol.gain[i ? "linearRampToValueAtTime" : "setValueAtTime"](v, tt);
         });
         am.connect(amg); amg.connect(g.gain);
+        const g2 = ac.createGain(); g2.gain.value = .35;
         o1.connect(lp); o2.connect(g2); g2.connect(lp); lp.connect(g); g.connect(vol); vol.connect(mestre);
         [o1, o2, am].forEach(o => { o.start(t); o.stop(t + dur + .05); });
       }
-      function chegada(dur){ if (pode()) motor(dur, [[0, 190, .001], [.15, 180, .16], [.62, 130, .3], [1, 90, .12]]); }
-      function marcha(dur){ if (pode()) motor(dur, [[0, 90, .12], [.5, 84, .1], [1, 86, .12]]); }
-      function saida(dur){ if (pode()) motor(dur, [[0, 86, .12], [.08, 150, .32], [.3, 220, .3], [.32, 160, .28], [.6, 240, .22], [1, 250, .001]]); }
-      // freada de desenho: "iiiiiihhh" escorregando + pneu no asfalto
+      function chegada(dur){ if (pode()) motor(dur, [[0, 330, .001], [.15, 320, .09], [.62, 240, .16], [1, 170, .05]]); }
+      function marcha(dur){ if (pode()) motor(dur, [[0, 150, .05], [.5, 140, .04], [1, 150, .05]]); }
+      function saida(dur){ if (pode()) motor(dur, [[0, 150, .05], [.12, 300, .17], [.35, 420, .15], [.38, 300, .14], [.65, 470, .1], [1, 520, .001]]); }
+      // freada de desenho: "iiiiu!" escorregando, curtinha e engraçada
       function freio(){
         if (!pode()) return;
-        const t = ac.currentTime, sai = ac.createGain(); sai.gain.value = .9; sai.connect(mestre);
-        [[1650, .075], [2480, .04]].forEach(([f, v]) => {
-          const o = ac.createOscillator(), g = ac.createGain(), lfo = ac.createOscillator(), lg = ac.createGain();
-          o.type = "triangle"; o.frequency.setValueAtTime(f, t); o.frequency.exponentialRampToValueAtTime(f * .72, t + 1.2);
-          lfo.frequency.setValueAtTime(14, t); lfo.frequency.linearRampToValueAtTime(26, t + 1.2); lg.gain.value = f * .035;
-          lfo.connect(lg); lg.connect(o.frequency);
-          g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v, t + .06); g.gain.setValueAtTime(v, t + .95); g.gain.exponentialRampToValueAtTime(.0001, t + 1.3);
-          o.connect(g); g.connect(sai); [o, lfo].forEach(x => { x.start(t); x.stop(t + 1.35); });
-        });
-        const n = ruido(1.25), bp = ac.createBiquadFilter(), gn = ac.createGain();
-        bp.type = "bandpass"; bp.frequency.setValueAtTime(1300, t); bp.frequency.exponentialRampToValueAtTime(600, t + 1.2); bp.Q.value = .9;
-        gn.gain.setValueAtTime(.0001, t); gn.gain.exponentialRampToValueAtTime(.16, t + .08); gn.gain.exponentialRampToValueAtTime(.0001, t + 1.2);
-        n.connect(bp); bp.connect(gn); gn.connect(sai); n.start(t); n.stop(t + 1.25);
+        const t = ac.currentTime + .55, sai = ac.createGain(); sai.gain.value = .9; sai.connect(mestre);
+        const o = ac.createOscillator(), g = ac.createGain(), lfo = ac.createOscillator(), lg = ac.createGain();
+        o.type = "sine"; o.frequency.setValueAtTime(2300, t); o.frequency.exponentialRampToValueAtTime(1500, t + .35); o.frequency.exponentialRampToValueAtTime(700, t + .6);
+        lfo.frequency.value = 32; lg.gain.value = 70; lfo.connect(lg); lg.connect(o.frequency);
+        g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.13, t + .04); g.gain.setValueAtTime(.13, t + .45); g.gain.exponentialRampToValueAtTime(.0001, t + .65);
+        o.connect(g); g.connect(sai); [o, lfo].forEach(x => { x.start(t); x.stop(t + .7); });
+        const n = ruido(.5), bp = ac.createBiquadFilter(), gn = ac.createGain();
+        bp.type = "bandpass"; bp.frequency.value = 2500; bp.Q.value = 1.2;
+        gn.gain.setValueAtTime(.0001, t); gn.gain.exponentialRampToValueAtTime(.05, t + .05); gn.gain.exponentialRampToValueAtTime(.0001, t + .5);
+        n.connect(bp); bp.connect(gn); gn.connect(sai); n.start(t); n.stop(t + .5);
       }
-      // "boing" de mola quando o bico abaixa
+      // "boiiing" de mola quando o bico abaixa
       function boing(){
         if (!pode()) return;
         const t = ac.currentTime, o = ac.createOscillator(), g = ac.createGain(), lfo = ac.createOscillator(), lg = ac.createGain();
-        o.type = "sine"; o.frequency.setValueAtTime(190, t); o.frequency.exponentialRampToValueAtTime(330, t + .09); o.frequency.exponentialRampToValueAtTime(170, t + .45);
-        lfo.frequency.value = 17; lg.gain.value = 22; lfo.connect(lg); lg.connect(o.frequency);
-        g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.16, t + .02); g.gain.exponentialRampToValueAtTime(.0001, t + .5);
-        o.connect(g); g.connect(mestre); [o, lfo].forEach(x => { x.start(t); x.stop(t + .55); });
+        o.type = "triangle"; o.frequency.setValueAtTime(220, t); o.frequency.exponentialRampToValueAtTime(520, t + .08); o.frequency.exponentialRampToValueAtTime(260, t + .7);
+        lfo.frequency.setValueAtTime(14, t); lfo.frequency.linearRampToValueAtTime(7, t + .7); lg.gain.setValueAtTime(70, t); lg.gain.exponentialRampToValueAtTime(8, t + .7);
+        lfo.connect(lg); lg.connect(o.frequency);
+        g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.2, t + .02); g.gain.exponentialRampToValueAtTime(.0001, t + .75);
+        o.connect(g); g.connect(mestre); [o, lfo].forEach(x => { x.start(t); x.stop(t + .8); });
       }
-      // bi-bi!
+      // buzina de brinquedo: "bi-bi!"
       function buzina(){
         if (!pode()) return;
         const t0 = ac.currentTime + .02;
-        [0, .24].forEach(dt => {
+        [0, .2].forEach(dt => {
           const t = t0 + dt, lp = ac.createBiquadFilter(), g = ac.createGain();
-          lp.type = "lowpass"; lp.frequency.value = 2200; g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.09, t + .015);
-          g.gain.setValueAtTime(.09, t + .13); g.gain.exponentialRampToValueAtTime(.0001, t + .17);
-          [400, 504].forEach(f => { const o = ac.createOscillator(); o.type = "square"; o.frequency.value = f; o.connect(lp); o.start(t); o.stop(t + .18); });
+          lp.type = "lowpass"; lp.frequency.value = 2600; g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.08, t + .012);
+          g.gain.setValueAtTime(.08, t + .1); g.gain.exponentialRampToValueAtTime(.0001, t + .14);
+          [660, 830].forEach(f => { const o = ac.createOscillator(); o.type = "square"; o.frequency.setValueAtTime(f * 1.04, t); o.frequency.exponentialRampToValueAtTime(f, t + .05); o.connect(lp); o.start(t); o.stop(t + .15); });
           lp.connect(g); g.connect(mestre);
         });
       }
-      return {chegada, marcha, saida, freio, boing, buzina};
+      // "plim-plim" de xilofone quando o 25 anos aparece na fumaça
+      function brilho(){
+        if (!pode()) return;
+        const t0 = ac.currentTime + .1;
+        [1047, 1319, 1568, 2093].forEach((f, i) => {
+          const t = t0 + i * .11, o = ac.createOscillator(), o2 = ac.createOscillator(), g = ac.createGain();
+          o.type = "sine"; o.frequency.value = f; o2.type = "sine"; o2.frequency.value = f * 4.02;
+          const g2 = ac.createGain(); g2.gain.value = .25;
+          g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.09, t + .008); g.gain.exponentialRampToValueAtTime(.0001, t + (i === 3 ? 1.1 : .45));
+          o.connect(g); o2.connect(g2); g2.connect(g); g.connect(mestre); [o, o2].forEach(x => { x.start(t); x.stop(t + 1.2); });
+        });
+      }
+      return {chegada, marcha, saida, freio, boing, buzina, brilho};
     })();
   })();
 
