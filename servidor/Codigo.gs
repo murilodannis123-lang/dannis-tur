@@ -169,7 +169,7 @@ function avisarAniversariantes(){
 /* ===================== avisos ===================== */
 function avisaDono_(texto){
   const p = PropertiesService.getScriptProperties();
-  const fone = p.getProperty("ZAP_DONO"), chave = p.getProperty("CALLMEBOT_CHAVE");
+  const fone = p.getProperty("ZAP_DONO") || "+5519997781210", chave = p.getProperty("CALLMEBOT_CHAVE");
   let enviado = false;
   if (fone && chave){
     try {
