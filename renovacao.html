@@ -21,7 +21,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,600;0,800;1,700;1,800;1,900&family=Figtree:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="estilo.css?v=18">
+<link rel="stylesheet" href="estilo.css?v=19">
 <style>body{margin:0}</style>
 </head>
 <body>
@@ -138,15 +138,16 @@
 
       <!-- sucesso -->
       <section id="e4" class="sucesso" hidden style="display:grid;gap:18px">
-        <h3>Bora pra 2027!</h3>
-        <p id="sucTxt">Recebemos a sua renovação assinada.</p>
-        <a class="btn btn-pri" id="linkContrato" href="#" hidden>Acompanhar meu contrato</a>
+        <div class="boas-vindas" aria-hidden="true">🚐💜</div>
+        <h3>Seja bem-vindo à família Danni's!!!</h3>
+        <p id="sucTxt">Recebemos o seu contrato assinado. Obrigado pela confiança!</p>
+        <a class="btn btn-pri" id="linkContrato" href="#" hidden>Ver meu contrato</a>
         <a class="btn btn-zap" id="zap" href="#" target="_blank" rel="noopener" hidden>Enviar confirmação no WhatsApp</a>
         <div class="box-assina">
           <h4>Próximos passos</h4>
           <ol class="passos">
-            <li><span>Seu contrato assinado já foi pro WhatsApp da Danni's Tur. Se o WhatsApp não abriu sozinho, toque no botão verde aqui em cima.</span></li>
-            <li><span>Pelo link do contrato você pode salvar o PDF ou imprimir a sua cópia quando quiser.</span></li>
+            <li><span>A Danni's Tur já recebeu o seu contrato assinado. Não precisa mandar mais nada.</span></li>
+            <li><span>Toque em <b>Ver meu contrato</b> pra salvar o PDF ou imprimir a sua cópia quando quiser.</span></li>
           </ol>
         </div>
         <button class="btn btn-link" type="button" id="novo">Fazer outra renovação</button>
@@ -200,8 +201,7 @@
     $(".titulo-sec p").textContent = "Preencha os dados do aluno, coloque o valor combinado no WhatsApp e assine com o dedo. Pronto, o contrato já sai assinado.";
     $("#aceite").parentElement.lastChild.textContent = " Li a prévia do contrato, quero contratar o transporte escolar da Danni's Tur para 2027 e autorizo o uso destes dados para o contrato.";
     $("#confirmar").textContent = TX.fim;
-    $("#e4 h3").textContent = "Bem-vindo à Danni's Tur!";
-    $("#sucTxt").textContent = "Recebemos o seu cadastro assinado.";
+    $("#sucTxt").textContent = "Recebemos o seu contrato assinado. Obrigado pela confiança!";
     $("#novo").textContent = TX.outro;
   }
 
@@ -415,11 +415,8 @@
         const link = DT.linkContrato(r.token);
         ls.set("dt-contrato", link);
         $("#linkContrato").href = link; $("#linkContrato").hidden = false;
-        $("#sucTxt").textContent = TX.sucesso + " Seu contrato assinado está indo pro WhatsApp da Danni's Tur. Guarde o link: é por ele que você salva ou imprime a sua cópia.";
-        const zap = zapLink(ZAP_DANNIS, TX.zap(dados) + new URL(link, location.href).href);
-        $("#zap").href = zap; $("#zap").textContent = "Enviar contrato assinado no WhatsApp"; $("#zap").hidden = false;
+        $("#sucTxt").textContent = "Recebemos o seu contrato assinado. Obrigado pela confiança!";   // a Danni's Tur recebe o aviso no WhatsApp pelo servidor
         mostrar(4);
-        setTimeout(() => { location.href = zap; }, 900);   // abre o WhatsApp da Danni's Tur já com a mensagem e o link do contrato
       }catch(e){
         $("#e3Err").textContent = "Não consegui enviar agora. Confira a internet e toque de novo em Assinar e enviar.";
       }

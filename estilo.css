@@ -351,3 +351,6 @@ img.van{height:auto}
 .bts-ass .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;font-size:15px}
 .bts-ass .btn svg{width:18px;height:18px}
 .bts-ass .btn:disabled{opacity:.45;cursor:default}
+.boas-vindas{font-size:54px;line-height:1;animation:pula 1.2s ease-in-out infinite alternate}
+@keyframes pula{from{transform:translateY(0)}to{transform:translateY(-8px)}}
+@media (prefers-reduced-motion:reduce){.boas-vindas{animation:none}}
