@@ -280,3 +280,14 @@ function agora_(){ return Utilities.formatDate(new Date(), FUSO, "yyyy-MM-dd'T'H
 function hoje_(){ return Utilities.formatDate(new Date(), FUSO, "yyyy-MM-dd"); }
 function erro_(m, codigo){ const e = new Error(m); e.codigo = codigo; return e; }
 function json_(o){ return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON); }
+
+/* diagnóstico do WhatsApp: mostra no registro o que o CallMeBot respondeu (sem mostrar a chave) */
+function diagnosticoZap(){
+  const p = PropertiesService.getScriptProperties();
+  const fone = p.getProperty("ZAP_DONO") || "+5519997781210", chave = p.getProperty("CALLMEBOT_CHAVE");
+  Logger.log("Numero usado: " + fone + " | chave salva: " + (chave ? "sim (" + String(chave).length + " digitos)" : "NAO"));
+  if (!chave) return;
+  const url = "https://api.callmebot.com/whatsapp.php?phone=" + encodeURIComponent(fone) + "&text=" + encodeURIComponent("✅ Teste Danni's Tur") + "&apikey=" + encodeURIComponent(chave);
+  const r = UrlFetchApp.fetch(url, {muteHttpExceptions:true});
+  Logger.log("Resposta " + r.getResponseCode() + ": " + r.getContentText().replace(/<[^>]+>/g," ").replace(/\s+/g," ").slice(0,400));
+}
