@@ -52,8 +52,8 @@ function cadastrar_(d){
     const sh = aba_();
     const id = proximoId_(sh);
     const token = novoCodigo_(sh);
-    const ass = String(d.assinatura || "");
-    if (!/^data:image\/(png|jpeg);base64,[A-Za-z0-9+\/=]+$/.test(ass) || ass.length > 49000) throw erro_("Faltou a assinatura. Assine no quadro e toque de novo em enviar.");
+    let ass = String(d.assinatura || "");   // antigo: assinatura com o dedo (hoje a família assina pelo gov.br)
+    if (!/^data:image\/(png|jpeg);base64,[A-Za-z0-9+\/=]+$/.test(ass) || ass.length > 49000) ass = "";
     const alunos = d.alunos.slice(0,8).map(a => ({nome:limpa_(a.nome,80), nasc:limpa_(a.nasc,10), escola:limpa_(a.escola,60), periodo:limpa_(a.periodo,20), trajeto:limpa_(a.trajeto,20)}));
     const linha = {
       id, token, criado_em:agora_(), status:STATUS.AGUARDANDO,
@@ -63,17 +63,17 @@ function cadastrar_(d){
       alunos_texto: alunos.map(a => `${a.nome} (${fmt_(a.nasc)}) – ${a.escola} – ${a.periodo} – ${a.trajeto}`).join("\n"),
       alunos_json: JSON.stringify(alunos), obs:limpa_(d.obs,500), data_cadastro: hoje_(),
       tipo: d.tipo === "novo" ? "novo" : "renovacao",
-      assinatura: ass, assinado_em: agora_(), assinatura_info: "Assinado na tela pelo responsável · " + limpa_(d.aparelho, 160)
+      assinatura: ass, assinado_em: ass ? agora_() : "", assinatura_info: ass ? "Assinado na tela pelo responsável · " + limpa_(d.aparelho, 160) : ""
     };
     // valor combinado no WhatsApp, digitado pela família: contrato já nasce completo e assinado
     const v = d.valores || {}, mens = Number(v.mensalidade), parc = Math.round(Number(v.parcelas)), ini = Math.round(Number(v.ini));
     const temValor = mens >= 50 && mens <= 20000 && parc >= 1 && parc <= 12 && ini > 24000;
     if (temValor){
-      Object.assign(linha, {inicio_idx: ini, mensalidade: mens, parcelas: parc, total: Math.round(mens * parc * 100) / 100,
-                            data_contrato: hoje_(), liberado_em: agora_(), status: STATUS.ASSINADO});
+      Object.assign(linha, {inicio_idx: ini, mensalidade: mens, parcelas: parc, total: Math.round(mens * parc * 100) / 100, data_contrato: hoje_()});
+      if (ass) Object.assign(linha, {liberado_em: agora_(), status: STATUS.ASSINADO});   // fluxo antigo
     }
     sh.appendRow(COLS.map(c => linha[c] == null ? "" : linha[c]));
-    avisaDono_(`${linha.tipo === "novo" ? "🆕 *Contrato novo 2027*" : "🚐 *Nova renovação 2027*"} (nº ${id}) ✍️ já assinado\n${linha.responsavel} – ${linha.celular}\n${temValor ? `💰 R$ ${brl_(linha.mensalidade)}/mês × ${linha.parcelas} = R$ ${brl_(linha.total)}\n` : "💰 Sem valor – colocar no admin\n"}${alunos.map(a=>`• ${a.nome} – ${a.escola}`).join("\n")}\n\n📄 Contrato: ${SITE}contrato?${token}\n👉 ${temValor ? "Conferir / corrigir valor" : "Colocar o valor e liberar"}:\n${SITE}admin.html#f=${id}`);
+    avisaDono_(`${linha.tipo === "novo" ? "🆕 *Contrato novo 2027*" : "🚐 *Nova renovação 2027*"} (nº ${id})\n${linha.responsavel} – ${linha.celular}\n${temValor ? `💰 R$ ${brl_(linha.mensalidade)}/mês × ${linha.parcelas} = R$ ${brl_(linha.total)}\n` : "💰 Sem valor – colocar no admin\n"}${alunos.map(a=>`• ${a.nome} – ${a.escola}`).join("\n")}\n\n👉 Conferir o valor e tocar no botão verde (a família assina pelo gov.br):\n${SITE}admin.html#f=${id}`);
     return {ok:true, token, id};
   } finally { lock.releaseLock(); }
 }
@@ -97,7 +97,7 @@ function enviarAssinado_(req){
   const blob = Utilities.newBlob(Utilities.base64Decode(req.base64), tipo, `Contrato 2027 - ${r.obj.id} - ${r.obj.responsavel}${tipo==="application/pdf"?".pdf":""}`);
   const arq = pasta_().createFile(blob);
   atualiza_(r.linha, {status:STATUS.ASSINADO, assinado_em:agora_(), arquivo_url:arq.getUrl()});
-  avisaDono_(`✍️ *Contrato assinado recebido* (nº ${r.obj.id})\n${r.obj.responsavel}\nO arquivo está na pasta "Danni's Tur – Contratos assinados" do seu Google Drive.`);
+  avisaDono_(`✍️ *Contrato assinado pelo gov.br recebido* (nº ${r.obj.id})\n${r.obj.responsavel}\nO PDF assinado está na pasta "Danni's Tur – Contratos assinados" do seu Google Drive e no botão "Ver contrato assinado" da Área Danni's:\n${SITE}admin.html#f=${r.obj.id}`);
   return {ok:true};
 }
 
@@ -137,19 +137,19 @@ function minhaAssinatura_(req){
 function assinarDannis_(req){
   const r = porId_(req.id); if (!r) throw erro_("Cadastro não encontrado.");
   if (!cfg_("assinatura_dannis")) throw erro_("Crie a sua assinatura primeiro (quadro 'Minha assinatura').");
-  if (!r.obj.assinatura) throw erro_("A família ainda não assinou.");
-  if (!(Number(r.obj.mensalidade) > 0)) throw erro_("Coloque o valor antes de assinar.");
+  if (!(Number(r.obj.mensalidade) > 0)) throw erro_("Coloque o valor e salve antes de enviar.");
+  if (r.obj.status === STATUS.CANCELADO) throw erro_("Este contrato está cancelado.");
   const mud = {assinado_dannis_em: r.obj.assinado_dannis_em || agora_()};
-  if (r.obj.status === STATUS.AGUARDANDO || r.obj.status === STATUS.LIBERADO) mud.status = STATUS.ASSINADO;
+  if (r.obj.status === STATUS.AGUARDANDO) mud.status = r.obj.assinatura ? STATUS.ASSINADO : STATUS.LIBERADO;
   if (!r.obj.liberado_em) mud.liberado_em = agora_();
   atualiza_(r.linha, mud);
   let email = false;
   if (r.obj.email && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(r.obj.email)){
     try {
       const link = `${SITE}contrato?${r.obj.token}`, nome = String(r.obj.responsavel).split(" ")[0];
-      MailApp.sendEmail({to: r.obj.email, name: "Danni's Tur", subject: "Seu contrato Danni's Tur 2027 assinado",
-        body: `Olá, ${nome}!\n\nSeu contrato do transporte escolar 2027 está assinado pela família e pela Danni's Tur.\nVeja, salve ou imprima a sua cópia: ${link}\n\nSeja bem-vindo à família Danni's! 🚐💜`,
-        htmlBody: `<p>Olá, ${nome}!</p><p>Seu contrato do transporte escolar 2027 está assinado pela família e pela Danni's Tur.</p><p><a href="${link}">Ver, salvar ou imprimir a sua cópia</a></p><p>Seja bem-vindo à família Danni's! 🚐💜</p>`});
+      MailApp.sendEmail({to: r.obj.email, name: "Danni's Tur", subject: "Seu contrato Danni's Tur 2027 – falta só a sua assinatura",
+        body: `Olá, ${nome}!\n\nSeu contrato do transporte escolar 2027 já está assinado pela Danni's Tur. Falta só você assinar pelo gov.br (é grátis):\n${link}\n\nNo link: 1) baixe o PDF, 2) assine em assinador.iti.br com a sua conta gov.br, 3) envie o PDF assinado pelo mesmo link.\n\nSeja bem-vindo à família Danni's! 🚐💜`,
+        htmlBody: `<p>Olá, ${nome}!</p><p>Seu contrato do transporte escolar 2027 já está assinado pela Danni's Tur. Falta só você assinar pelo <b>gov.br</b> (é grátis).</p><p><a href="${link}">Abrir meu contrato</a></p><ol><li>Baixe o PDF</li><li>Assine em assinador.iti.br com a sua conta gov.br</li><li>Envie o PDF assinado pelo mesmo link</li></ol><p>Seja bem-vindo à família Danni's! 🚐💜</p>`});
       email = true;
     } catch(e){}
   }
@@ -209,8 +209,11 @@ function avisaDono_(texto){
     try {
       const url = "https://api.callmebot.com/whatsapp.php?phone=" + encodeURIComponent(fone) + "&text=" + encodeURIComponent(texto) + "&apikey=" + encodeURIComponent(chave);
       const r = UrlFetchApp.fetch(url, {muteHttpExceptions:true});
-      enviado = r.getResponseCode() === 200;
-    } catch(e){}
+      const corpo = r.getContentText().replace(/<[^>]+>/g," ").replace(/\s+/g," ").trim().slice(0,200);
+      enviado = r.getResponseCode() === 200 && !/error|apikey|invalid|not.*active/i.test(corpo);
+      Logger.log("WhatsApp " + r.getResponseCode() + ": " + corpo);
+      try { setCfg_("ultimo_aviso", agora_() + " · " + r.getResponseCode() + " · " + corpo); } catch(e2){}
+    } catch(e){ Logger.log("WhatsApp falhou: " + e); try { setCfg_("ultimo_aviso", agora_() + " · ERRO · " + e); } catch(e2){} }
   }
   const email = p.getProperty("EMAIL_AVISOS");
   if (email){ try { MailApp.sendEmail(email, "Danni's Tur – aviso", texto.replace(/\*/g,"")); } catch(e){} }

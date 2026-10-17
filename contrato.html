@@ -10,9 +10,19 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,600;0,800;1,700;1,800;1,900&family=Figtree:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="estilo.css?v=20">
+<link rel="stylesheet" href="estilo.css?v=21">
 <style>
 body{margin:0}
+.passos-gov{list-style:none;counter-reset:p;margin:0;padding:0;display:grid;gap:12px}
+.passos-gov li{counter-increment:p;position:relative;padding:14px 14px 14px 56px;border:1.5px solid var(--linha);border-radius:14px;background:#fff;display:grid;gap:8px;justify-items:start}
+.passos-gov li::before{content:counter(p);position:absolute;left:14px;top:14px;width:30px;height:30px;border-radius:50%;background:var(--roxo);color:#fff;font-weight:800;display:grid;place-items:center;font-family:var(--f-display)}
+.passos-gov > li > b{font-family:var(--f-display);font-size:18px;color:var(--roxo)}
+.passos-gov span{font-size:14.5px;color:var(--tinta-2)}
+.btn-verde{background:#1fa855;color:#fff;border:0}
+.btn-verde:disabled{opacity:.45}
+.outro-jeito{font-size:14.5px}
+.outro-jeito summary{cursor:pointer;font-weight:700;color:var(--tinta-2)}
+.outro-jeito p{margin:8px 0}
 .pg{max-width:860px;margin:0 auto;padding-block:20px 48px;display:grid;gap:16px}
 .topo{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
 .topo img{width:170px;height:auto}
@@ -52,28 +62,32 @@ input[type=file]{width:100%;font-size:14px}
     <div id="stImpresso" class="aviso-box ok" hidden><b>Combinado! Imprima, assine e entregue o contrato na van.</b><span>Se preferir, você ainda pode assinar pelo gov.br abaixo.</span></div>
 
     <div class="card passo" id="assinar" hidden>
-      <h3>Como você quer assinar?</h3>
-      <div class="opcoes">
-        <div class="opcao">
-          <h4>Imprimir e assinar</h4>
-          <p>Imprima as duas páginas, assine e entregue na van.</p>
-          <button class="btn btn-pri" type="button" id="btnImprimir">Imprimir contrato</button>
-        </div>
-        <div class="opcao">
-          <h4>Assinar pelo gov.br</h4>
-          <ol>
-            <li>Toque em <b>Salvar PDF</b> (na tela de impressão, escolha "Salvar como PDF").</li>
-            <li>Entre em <a href="https://assinador.iti.br" target="_blank" rel="noopener">assinador.iti.br</a> com a sua conta gov.br (nível prata ou ouro).</li>
-            <li>Envie o PDF, posicione a assinatura e baixe o arquivo assinado.</li>
-            <li>Mande o arquivo assinado aqui embaixo.</li>
-          </ol>
-          <button class="btn btn-sec" type="button" id="btnPdf">Salvar PDF</button>
-          <label for="arq" style="font-weight:700;font-size:14px">Contrato assinado (PDF)</label>
-          <input type="file" id="arq" accept="application/pdf,image/*">
-          <button class="btn btn-pri" type="button" id="btnEnviar" disabled>Enviar contrato assinado</button>
+      <h3>Assine pelo gov.br em 3 passos</h3>
+      <p class="dica" style="margin:0">É grátis e vale como assinatura eletrônica. Precisa da conta gov.br <b>nível prata ou ouro</b> (a mesma do app gov.br).</p>
+      <ol class="passos-gov">
+        <li>
+          <b>Baixe o contrato</b>
+          <span>O PDF já vem com a assinatura da Danni's Tur.</span>
+          <button class="btn btn-pri" type="button" id="btnBaixar">Baixar contrato (PDF)</button>
+        </li>
+        <li>
+          <b>Assine no gov.br</b>
+          <span>Entre com a sua conta gov.br, envie o PDF que você baixou, toque onde quer a assinatura, confirme e <strong>baixe o arquivo assinado</strong>.</span>
+          <a class="btn btn-sec" id="btnGov" href="https://assinador.iti.br/" target="_blank" rel="noopener">Abrir o assinador gov.br</a>
+        </li>
+        <li>
+          <b>Envie o PDF assinado</b>
+          <span>Escolha o PDF que o gov.br baixou depois que você assinou.</span>
+          <input type="file" id="arq" accept="application/pdf,.pdf">
+          <button class="btn btn-verde" type="button" id="btnEnviar" disabled>Enviar contrato assinado</button>
           <p class="msg-err" id="envErr" role="alert"></p>
-        </div>
-      </div>
+        </li>
+      </ol>
+      <details class="outro-jeito">
+        <summary>Não tenho gov.br prata/ouro</summary>
+        <p>Sem problema: imprima, assine à mão e entregue na van.</p>
+        <button class="btn btn-sec" type="button" id="btnImprimir">Imprimir contrato</button>
+      </details>
     </div>
 
     <div class="folha" id="folhaWrap"><div id="folha"></div></div>
@@ -106,18 +120,15 @@ input[type=file]{width:100%;font-size:14px}
     $("#carregando").hidden = true; $("#conteudo").hidden = false;
     $("#ola").textContent = `Contrato de ${fam.responsavel.split(" ")[0]}`;
     const st = fam.status;
-    const assinou = !!fam.assinatura || st==="assinado_online" || st==="recebido";
+    const assinou = st==="assinado_online" || st==="recebido";
     $("#stEspera").hidden = liberado;
-    $("#stEspera").innerHTML = fam.assinatura
-      ? "<b>Seu contrato já está assinado.</b><span>Falta só a Danni's Tur colocar o valor. Você recebe o aviso no WhatsApp e vê o contrato completo neste mesmo link.</span>"
-      : "<b>Aguardando a Danni's Tur colocar o valor.</b><span>Assim que o contrato for liberado você recebe o aviso no WhatsApp e, por este mesmo link, pode imprimir ou assinar pelo gov.br.</span>";
+    $("#stEspera").innerHTML = "<b>A Danni's Tur está conferindo o seu contrato.</b><span>Assim que estiver pronto, você recebe o aviso no WhatsApp e assina por este mesmo link, pelo gov.br.</span>";
     $("#stAssinado").hidden = !(liberado && assinou);
-    const faltaDannis = !!fam.assinatura && !fam.assinadoDannisEm;
-    $("#stAssinado b").textContent = faltaDannis ? "Você já assinou! Falta só a Danni's Tur assinar." : "Contrato assinado pelas duas partes. Bem-vindo à família Danni's!";
-    $("#stAssinado span").textContent = faltaDannis ? "Assim que a Danni's Tur assinar, você recebe a cópia no WhatsApp (e no e-mail, se informou). Se quiser, já pode guardar esta via:" : "Guarde a sua cópia:";
+    $("#stAssinado b").textContent = "Contrato assinado! Bem-vindo à família Danni's!";
+    $("#stAssinado span").textContent = fam.assinatura ? "Guarde a sua cópia:" : "A sua via assinada é o PDF que o gov.br baixou no seu celular. Se quiser, guarde também esta:";
     $("#stImpresso").hidden = st!=="vai_entregar_impresso";
     $("#assinar").hidden = !liberado || assinou;
-    $("#chipSt").textContent = !liberado ? (fam.assinatura ? "Assinado · aguardando valor" : "Aguardando valor") : (assinou ? (fam.assinatura && !fam.assinadoDannisEm ? "Aguardando a Danni's Tur" : "Assinado") : "Liberado pra assinar");
+    $("#chipSt").textContent = !liberado ? "Em conferência" : (assinou ? "Assinado" : "Falta a sua assinatura");
     $("#folha").innerHTML = contratoHTML(fam, liberado ? fam.valores : {});
     $("#folhaWrap").classList.toggle("marca-dagua", !liberado);
     $("#folhaWrap").dataset.marca = "AGUARDANDO LIBERAÇÃO";
@@ -131,8 +142,31 @@ input[type=file]{width:100%;font-size:14px}
   }
   $("#btnImprimir").onclick = imprimir;
   $("#btnCopia").onclick = ()=>{ if (liberado) window.print(); };
-  $("#btnPdf").onclick = ()=>{ if (liberado) window.print(); };
   window.addEventListener("beforeprint", ()=>{ if (!liberado) preparaImpressao('<p style="font:16px Arial;padding:40px;text-align:center">Este contrato ainda não foi liberado para impressão pela Danni\'s Tur.</p>'); });
+
+  /* baixa o contrato como arquivo PDF (pra subir no assinador gov.br) */
+  function carregaLib(){
+    if (window.html2pdf) return Promise.resolve();
+    return new Promise((ok, erro) => { const sc = document.createElement("script"); sc.src = "https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"; sc.onload = ok; sc.onerror = erro; document.head.appendChild(sc); });
+  }
+  $("#btnBaixar").onclick = async ()=>{
+    if (!liberado) return;
+    const b = $("#btnBaixar"); b.disabled = true; b.textContent = "Gerando o PDF…";
+    try{
+      await carregaLib();
+      const caixa = document.createElement("div");
+      caixa.style.cssText = "position:absolute;left:-10000px;top:0;width:720px;background:#fff";
+      caixa.className = "pdf-gerar";
+      caixa.innerHTML = contratoHTML(fam, fam.valores);
+      document.body.appendChild(caixa);
+      const nome = `Contrato Danni's Tur 2027 - ${fam.responsavel}.pdf`.replace(/[\\/:*?"<>|]/g, "");
+      await html2pdf().set({margin:[10,12,10,12], filename:nome, image:{type:"jpeg", quality:0.92}, html2canvas:{scale:2, useCORS:true, backgroundColor:"#ffffff", scrollX:0, scrollY:0, windowWidth:760, width:720},
+        jsPDF:{unit:"mm", format:"a4", orientation:"portrait"}, pagebreak:{mode:["css"], avoid:[".ct-cl",".ct-ass","h4"]}}).from(caixa.firstElementChild).save();
+      caixa.remove();
+      b.textContent = "Baixado! Baixar de novo";
+    }catch(e){ b.textContent = "Baixar contrato (PDF)"; $("#envErr").textContent = "Não consegui gerar o PDF aqui. Tente de novo ou use o Chrome."; }
+    b.disabled = false;
+  };
 
   $("#arq").onchange = ()=>{ $("#btnEnviar").disabled = !$("#arq").files.length; $("#envErr").textContent=""; };
   $("#btnEnviar").onclick = async ()=>{

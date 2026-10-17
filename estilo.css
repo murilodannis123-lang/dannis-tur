@@ -336,7 +336,8 @@ img.van{height:auto}
 /* assinatura feita com o dedo na tela */
 .ct-ass div{position:relative}
 .ct-assinatura{position:absolute;left:50%;bottom:100%;transform:translateX(-50%);height:62px;width:auto;max-width:95%}
-.ct-ass.assinado{margin-top:78px!important}
+.ct-ass.assinado{margin-top:14px!important;padding-top:70px}
+.pdf-gerar .contrato{padding:0}
 .ct-ass-info{font-size:10px;color:#555}
 .quadro-ass{display:grid;gap:8px}
 .quadro-ass h4{margin:0;font-family:var(--f-display);font-size:19px;color:var(--roxo)}

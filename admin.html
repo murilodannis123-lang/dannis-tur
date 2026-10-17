@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,600;0,800;1,700;1,800;1,900&family=Figtree:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="estilo.css?v=20">
+<link rel="stylesheet" href="estilo.css?v=21">
 <style>
 body{margin:0}
 .pg{max-width:1080px;margin:0 auto;padding-block:18px 48px;display:grid;gap:16px}
@@ -94,7 +94,7 @@ body{margin:0}
         <button type="button" class="btn btn-link" id="trocaAss" style="justify-self:start">Trocar assinatura</button>
       </div>
       <div id="assNova" class="quadro-ass" hidden>
-        <p>Assine uma vez aqui. Depois é só tocar no botão verde de cada família que a sua assinatura entra no contrato.</p>
+        <p>Assine uma vez aqui. Depois é só tocar no botão verde de cada família: a sua assinatura entra no contrato e a família assina pelo gov.br.</p>
         <div class="pad-ass" id="padDannis"><canvas id="cvDannis" aria-label="Quadro pra assinar"></canvas><div class="linha-ass"></div><div class="dica-ass">assine sobre a linha</div></div>
         <div class="bts-ass">
           <button type="button" class="btn btn-sec" id="desfazDannis">Voltar traço</button>
@@ -140,7 +140,7 @@ body{margin:0}
           <div class="btns">
             <button class="btn btn-pri" type="button" id="bLiberar">Salvar e liberar pra assinatura</button>
             <button class="btn btn-sec" type="button" id="bSalvar">Só salvar (não libera)</button>
-            <a class="btn btn-verde" id="bAssinar" href="#" target="_blank" rel="noopener" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Enviar contrato assinado pra família</span></a>
+            <a class="btn btn-verde" id="bAssinar" href="#" target="_blank" rel="noopener" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Assinar e mandar pra família assinar (gov.br)</span></a>
             <p class="dica" id="bAssinarDica" hidden></p>
             <a class="btn btn-zap" id="bZap" href="#" target="_blank" rel="noopener" hidden>Avisar a família no WhatsApp</a>
             <button class="btn btn-sec" type="button" id="bCopiar" hidden>Copiar link do contrato</button>
@@ -164,10 +164,10 @@ body{margin:0}
   const $ = s => document.querySelector(s);
   const {api, API, esc, fmtData, brl, num, hojeISO, vigencia, nomeMes, INI, FIM, idade, zapLink, contratoHTML, preparaImpressao} = DT;
   const ss = {get(k){try{return sessionStorage.getItem(k)}catch(e){return null}}, set(k,v){try{sessionStorage.setItem(k,v)}catch(e){}}};
-  const NOMES = {aguardando_valor:"Aguardando valor", liberado:"Liberado", vai_entregar_impresso:"Vai entregar impresso", assinado_online:"Assinado", recebido:"Recebido", cancelado:"Cancelado"};
+  const NOMES = {aguardando_valor:"Em conferência", liberado:"Esperando a família assinar", vai_entregar_impresso:"Vai entregar impresso", assinado_online:"Assinado", recebido:"Recebido", cancelado:"Cancelado"};
   const lsl = {get(k){try{return localStorage.getItem(k)}catch(e){return null}}, set(k,v){try{v?localStorage.setItem(k,v):localStorage.removeItem(k)}catch(e){}}};
   let senha = ss.get("dt-senha") || lsl.get("dt-senha-lembrar") || "", familias = [], filtro = "todos", atual = null, minhaAssinatura = "";
-  const faltaVoce = f => f.status !== "cancelado" && !!f.assinatura && num((f.valores||{}).mensalidade) > 0 && !f.assinadoDannisEm;
+  const faltaVoce = f => f.status === "aguardando_valor" && !f.assinadoDannisEm;   // chegou e ainda não foi conferido/assinado pela Danni's
 
   /* ---------- login ---------- */
   $("#fLogin").addEventListener("submit", async e=>{
@@ -198,7 +198,7 @@ body{margin:0}
     const c = {esp:0, lib:0, ass:0}; ativos.forEach(f=>c[grupo(f.status)]++);
     const alunos = ativos.reduce((s,f)=>s+f.alunos.length,0);
     const falta = ativos.filter(faltaVoce).length;
-    const cards = [["todos","",ativos.length,"Contratos"],["falta","falta",falta,"Falta você assinar"],["esp","esp",c.esp,"Aguardando valor"],["ass","ass",c.ass,"Assinados"],["alunos","",alunos,"Alunos"]];
+    const cards = [["todos","",ativos.length,"Contratos"],["falta","falta",falta,"Falta você conferir"],["lib","lib",c.lib,"Esperando a família"],["ass","ass",c.ass,"Assinados"],["alunos","",alunos,"Alunos"]];
     $("#placar").innerHTML = cards.map(([k,cls,n,t])=>`<button type="button" class="num ${cls}" data-f="${k}" aria-pressed="${filtro===k}"><b>${n}</b><span>${t}</span></button>`).join("");
     $("#placar").querySelectorAll(".num").forEach(b=>b.onclick=()=>{ filtro = b.dataset.f==="alunos" ? "todos" : b.dataset.f; desenha(); });
     aniversarios(ativos);
@@ -212,7 +212,7 @@ body{margin:0}
       <button type="button" class="fam" data-id="${f.id}">
         <span class="n">${f.id}</span>
         <span><b>${esc(f.responsavel)}</b>${f.tipo==="novo"?' <em class="tag-novo">Contrato novo</em>':''}<small>${f.alunos.map(a=>`${esc(a.nome)} · ${esc(a.escola)}`).join(" · ")}</small><small>${esc(f.celular)} · cadastro ${fmtData(f.dataCadastro)}${f.valores && num(f.valores.mensalidade) ? ` · R$ ${brl(num(f.valores.mensalidade))}/mês` : ""}</small></span>
-        ${faltaVoce(f) ? '<span class="pill falta">Falta você assinar</span>' : `<span class="pill ${f.status}">${NOMES[f.status]||f.status}</span>`}
+        ${faltaVoce(f) ? '<span class="pill falta">Falta você conferir</span>' : `<span class="pill ${f.status}">${NOMES[f.status]||f.status}</span>`}
       </button>`).join("") : `<div class="vazio">${familias.length ? "Nada nesse filtro." : "Nenhuma renovação ainda. Quando um pai confirmar no site, ela aparece aqui e você recebe aviso no WhatsApp."}</div>`;
     $("#lista").querySelectorAll(".fam").forEach(b=>b.onclick=()=>abrir(b.dataset.id));
   }
@@ -270,7 +270,7 @@ body{margin:0}
     $("#dPill").className = "pill " + f.status; $("#dPill").textContent = NOMES[f.status] || f.status;
     $("#bLiberar").textContent = lib ? "Salvar alterações" : "Salvar e liberar pra assinatura";
     $("#bSalvar").hidden = lib;
-    $("#bZap").hidden = !lib || !!f.assinatura; $("#bCopiar").hidden = !lib;
+    $("#bZap").hidden = true; $("#bCopiar").hidden = !lib;
     $("#bArquivo").hidden = !f.arquivo; if (f.arquivo) $("#bArquivo").href = f.arquivo;
     $("#bRecebido").hidden = !(f.status==="vai_entregar_impresso" || f.status==="liberado");
     $("#bCancelar").textContent = f.status==="cancelado" ? "Reativar esta renovação" : "Cancelar esta renovação";
@@ -332,14 +332,14 @@ body{margin:0}
   /* ---------- botão verde: assina pela Danni's e manda o contrato pra família no WhatsApp ---------- */
   function botaoVerde(){
     const f = atual, bt = $("#bAssinar"), dica = $("#bAssinarDica");
-    const pode = f && f.status !== "cancelado" && !!f.assinatura;
+    const pode = f && f.status !== "cancelado" && f.status !== "assinado_online" && f.status !== "recebido";
     bt.hidden = !pode; dica.hidden = true; if (!pode) return;
     const temValor = num((f.valores||{}).mensalidade) > 0;
-    bt.querySelector("span").textContent = f.assinadoDannisEm ? "Reenviar contrato assinado pra família" : "Enviar contrato assinado pra família";
+    bt.querySelector("span").textContent = f.assinadoDannisEm ? "Reenviar o link pra família assinar (gov.br)" : "Assinar e mandar pra família assinar (gov.br)";
     let motivo = !minhaAssinatura ? "Crie a sua assinatura no quadro “Minha assinatura” (na lista) pra liberar este botão." : !temValor ? "Coloque o valor e salve antes de enviar." : "";
     bt.setAttribute("aria-disabled", motivo ? "true" : "false");
     if (motivo){ dica.hidden = false; dica.textContent = motivo; }
-    bt.href = zapLink(f.celular, `Olá, ${f.responsavel.split(" ")[0]}! 🚐💜 Seja bem-vindo à família Danni's! Aqui está o seu contrato do transporte escolar 2027, assinado pela família e pela Danni's Tur:\n${linkContrato(f)}`);
+    bt.href = zapLink(f.celular, `Olá, ${f.responsavel.split(" ")[0]}! 🚐💜 Seu contrato do transporte escolar 2027 já está assinado pela Danni's Tur. Falta só você assinar pelo gov.br (é grátis). Abra o link, baixe o PDF, assine no gov.br e envie o PDF assinado pelo mesmo link:\n${linkContrato(f)}`);
   }
   $("#bAssinar").addEventListener("click", async e => {
     if ($("#bAssinar").getAttribute("aria-disabled") === "true"){ e.preventDefault(); return; }
@@ -349,7 +349,7 @@ body{margin:0}
       const r = await api("admin_assinar_dannis", {senha, id: atual.id});
       Object.assign(atual, r.familia); const i = familias.findIndex(x=>x.id===atual.id); if (i>=0) familias[i] = atual;
       estado(); previa();
-      $("#dOk").textContent = "Contrato assinado e enviado pra família" + (r.email ? " (WhatsApp e e-mail)." : " no WhatsApp.");
+      $("#dOk").textContent = "Assinado pela Danni's e enviado pra família assinar no gov.br" + (r.email ? " (WhatsApp e e-mail)." : " (WhatsApp).");
     }catch(err){ $("#dOk").textContent = ""; $("#dErr").textContent = err.message; }
   });
 
