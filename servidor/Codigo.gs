@@ -11,7 +11,7 @@
 const ABA = "Renovações";
 const COLS = ["id","token","criado_em","status","responsavel","cpf","rg","celular","fone_casa","outro_fone","email",
               "rua","bairro","cidade","cep","alunos_texto","alunos_json","obs","data_cadastro",
-              "inicio_idx","mensalidade","parcelas","total","data_contrato","liberado_em","assinado_em","arquivo_url","observacao_interna","tipo"];
+              "inicio_idx","mensalidade","parcelas","total","data_contrato","liberado_em","assinado_em","arquivo_url","observacao_interna","tipo","assinatura","assinatura_info"];
 const STATUS = {AGUARDANDO:"aguardando_valor", LIBERADO:"liberado", ASSINADO:"assinado_online", IMPRESSO:"vai_entregar_impresso", RECEBIDO:"recebido", CANCELADO:"cancelado"};
 const FUSO = "America/Sao_Paulo";
 const SITE = "https://murilodannis123-lang.github.io/dannis-tur/";
@@ -50,6 +50,8 @@ function cadastrar_(d){
     const sh = aba_();
     const id = proximoId_(sh);
     const token = novoCodigo_(sh);
+    const ass = String(d.assinatura || "");
+    if (!/^data:image\/(png|jpeg);base64,[A-Za-z0-9+\/=]+$/.test(ass) || ass.length > 49000) throw erro_("Faltou a assinatura. Assine no quadro e toque de novo em enviar.");
     const alunos = d.alunos.slice(0,8).map(a => ({nome:limpa_(a.nome,80), nasc:limpa_(a.nasc,10), escola:limpa_(a.escola,60), periodo:limpa_(a.periodo,20), trajeto:limpa_(a.trajeto,20)}));
     const linha = {
       id, token, criado_em:agora_(), status:STATUS.AGUARDANDO,
@@ -58,10 +60,11 @@ function cadastrar_(d){
       rua:limpa_(d.rua,120), bairro:limpa_(d.bairro,60), cidade:limpa_(d.cidade,60), cep:limpa_(d.cep,9),
       alunos_texto: alunos.map(a => `${a.nome} (${fmt_(a.nasc)}) – ${a.escola} – ${a.periodo} – ${a.trajeto}`).join("\n"),
       alunos_json: JSON.stringify(alunos), obs:limpa_(d.obs,500), data_cadastro: hoje_(),
-      tipo: d.tipo === "novo" ? "novo" : "renovacao"
+      tipo: d.tipo === "novo" ? "novo" : "renovacao",
+      assinatura: ass, assinado_em: agora_(), assinatura_info: "Assinado na tela pelo responsável · " + limpa_(d.aparelho, 160)
     };
     sh.appendRow(COLS.map(c => linha[c] == null ? "" : linha[c]));
-    avisaDono_(`${linha.tipo === "novo" ? "🆕 *Contrato novo 2027*" : "🚐 *Nova renovação 2027*"} (nº ${id})\n${linha.responsavel} – ${linha.celular}\n${alunos.map(a=>`• ${a.nome} – ${a.escola}`).join("\n")}\n\n👉 Colocar o valor e liberar:\n${SITE}admin.html#f=${id}`);
+    avisaDono_(`${linha.tipo === "novo" ? "🆕 *Contrato novo 2027*" : "🚐 *Nova renovação 2027*"} (nº ${id}) ✍️ já assinado\n${linha.responsavel} – ${linha.celular}\n${alunos.map(a=>`• ${a.nome} – ${a.escola}`).join("\n")}\n\n📄 Contrato: ${SITE}contrato?${token}\n👉 Colocar o valor e liberar:\n${SITE}admin.html#f=${id}`);
     return {ok:true, token, id};
   } finally { lock.releaseLock(); }
 }
@@ -121,7 +124,7 @@ function salvar_(req){
                  observacao_interna: limpa_(v.obsInterna, 500)};
     if (req.liberar){
       if (!(Number(v.mensalidade) > 0) || !(Number(v.parcelas) > 0)) throw erro_("Coloque a mensalidade e o número de parcelas antes de liberar.");
-      if (r.obj.status === STATUS.AGUARDANDO) mud.status = STATUS.LIBERADO;
+      if (r.obj.status === STATUS.AGUARDANDO) mud.status = r.obj.assinatura ? STATUS.ASSINADO : STATUS.LIBERADO;   // já assinou na tela: libera assinado
       mud.liberado_em = agora_();
     }
     atualiza_(r.linha, mud);
@@ -245,6 +248,7 @@ function publico_(o){
   return {
     id:o.id, status:o.status, responsavel:o.responsavel, cpf:o.cpf, rg:o.rg, celular:o.celular, foneCasa:o.fone_casa, outroFone:o.outro_fone, email:o.email,
     rua:o.rua, bairro:o.bairro, cidade:o.cidade, cep:o.cep, alunos, obs:o.obs, dataCadastro:String(o.data_cadastro||"").slice(0,10), tipo:o.tipo || "renovacao",
+    assinatura:o.assinatura || "", assinadoEm:o.assinado_em || "",
     valores:{ini:o.inicio_idx, mensalidade:o.mensalidade, parcelas:o.parcelas, total:o.total, dataContrato:String(o.data_contrato||"").slice(0,10)}
   };
 }

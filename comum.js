@@ -116,8 +116,8 @@
       <p class="ct-cl"><b>Cláusula 13.</b> Fica eleito o foro da Comarca de Sumaré, com prevalência sobre qualquer outro, por mais privilegiado que seja, para dirimir todas as dúvidas que possam advir de qualquer cláusula deste contrato. E, por estarem assim justos e contratados e de pleno acordo com todas as cláusulas estipuladas, assinam o presente instrumento particular em duas vias de igual teor e forma e sem rasura.</p>
       <p>${dataExtenso(x.dataContrato)}</p>
       <p><b>Ciente e de acordo,</b></p>
-      <div class="ct-ass">
-        <div>CONTRATANTE<br><b>${esc(f.responsavel)}</b><br>CPF ${esc(f.cpf)}<br>Reconheço e pagarei a dívida representada.</div>
+      <div class="ct-ass${f.assinatura ? " assinado" : ""}">
+        <div>${f.assinatura && /^data:image\/(png|jpeg);base64,/.test(f.assinatura) ? `<img class="ct-assinatura" src="${f.assinatura}" alt="Assinatura de ${esc(f.responsavel)}">` : ""}CONTRATANTE<br><b>${esc(f.responsavel)}</b><br>CPF ${esc(f.cpf)}<br>Reconheço e pagarei a dívida representada.${f.assinatura ? `<br><small class="ct-ass-info">Assinado eletronicamente na tela${f.assinadoEm ? ` em ${fmtData(String(f.assinadoEm).slice(0,10))} às ${String(f.assinadoEm).slice(11,16)}` : ""}</small>` : ""}</div>
         <div>CONTRATADO<br><b>${CONTRATADO.razao}</b><br>${CONTRATADO.fantasia} · CNPJ ${CONTRATADO.cnpj}</div>
       </div>
       <p class="ct-frase">“A boa reputação vale mais que grandes riquezas.”</p>

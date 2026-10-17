@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,600;0,800;1,700;1,800;1,900&family=Figtree:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="estilo.css?v=3">
+<link rel="stylesheet" href="estilo.css?v=17">
 <style>
 body{margin:0}
 .pg{max-width:860px;margin:0 auto;padding-block:20px 48px;display:grid;gap:16px}
@@ -48,7 +48,7 @@ input[type=file]{width:100%;font-size:14px}
       <b>Aguardando a Danni's Tur colocar o valor.</b>
       <span>Assim que o contrato for liberado você recebe o aviso no WhatsApp e, por este mesmo link, pode imprimir ou assinar pelo gov.br.</span>
     </div>
-    <div id="stAssinado" class="aviso-box ok" hidden><b>Recebemos o seu contrato assinado. Obrigado e bora pra 2027!</b></div>
+    <div id="stAssinado" class="aviso-box ok" hidden><b>Contrato assinado. Obrigado e bora pra 2027!</b><span>Guarde a sua cópia:</span><button class="btn btn-pri" type="button" id="btnCopia" style="justify-self:start">Salvar PDF / imprimir minha cópia</button></div>
     <div id="stImpresso" class="aviso-box ok" hidden><b>Combinado! Imprima, assine e entregue o contrato na van.</b><span>Se preferir, você ainda pode assinar pelo gov.br abaixo.</span></div>
 
     <div class="card passo" id="assinar" hidden>
@@ -82,7 +82,7 @@ input[type=file]{width:100%;font-size:14px}
 
 <div id="printArea"><p style="font:16px Arial;padding:40px;text-align:center">Este contrato ainda não foi liberado para impressão pela Danni's Tur.</p></div>
 
-<script src="comum.js?v=4"></script>
+<script src="comum.js?v=5"></script>
 <script>
 (function(){
   const $ = s => document.querySelector(s);
@@ -106,11 +106,15 @@ input[type=file]{width:100%;font-size:14px}
     $("#carregando").hidden = true; $("#conteudo").hidden = false;
     $("#ola").textContent = `Contrato de ${fam.responsavel.split(" ")[0]}`;
     const st = fam.status;
+    const assinou = !!fam.assinatura || st==="assinado_online" || st==="recebido";
     $("#stEspera").hidden = liberado;
-    $("#stAssinado").hidden = !(st==="assinado_online" || st==="recebido");
+    $("#stEspera").innerHTML = fam.assinatura
+      ? "<b>Seu contrato já está assinado.</b><span>Falta só a Danni's Tur colocar o valor. Você recebe o aviso no WhatsApp e vê o contrato completo neste mesmo link.</span>"
+      : "<b>Aguardando a Danni's Tur colocar o valor.</b><span>Assim que o contrato for liberado você recebe o aviso no WhatsApp e, por este mesmo link, pode imprimir ou assinar pelo gov.br.</span>";
+    $("#stAssinado").hidden = !(liberado && assinou);
     $("#stImpresso").hidden = st!=="vai_entregar_impresso";
-    $("#assinar").hidden = !liberado || st==="assinado_online" || st==="recebido";
-    $("#chipSt").textContent = !liberado ? "Aguardando valor" : (st==="assinado_online"||st==="recebido" ? "Assinado" : "Liberado pra assinar");
+    $("#assinar").hidden = !liberado || assinou;
+    $("#chipSt").textContent = !liberado ? (fam.assinatura ? "Assinado · aguardando valor" : "Aguardando valor") : (assinou ? "Assinado" : "Liberado pra assinar");
     $("#folha").innerHTML = contratoHTML(fam, liberado ? fam.valores : {});
     $("#folhaWrap").classList.toggle("marca-dagua", !liberado);
     $("#folhaWrap").dataset.marca = "AGUARDANDO LIBERAÇÃO";
@@ -123,6 +127,7 @@ input[type=file]{width:100%;font-size:14px}
     window.print();
   }
   $("#btnImprimir").onclick = imprimir;
+  $("#btnCopia").onclick = ()=>{ if (liberado) window.print(); };
   $("#btnPdf").onclick = ()=>{ if (liberado) window.print(); };
   window.addEventListener("beforeprint", ()=>{ if (!liberado) preparaImpressao('<p style="font:16px Arial;padding:40px;text-align:center">Este contrato ainda não foi liberado para impressão pela Danni\'s Tur.</p>'); });
 

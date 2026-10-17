@@ -23,7 +23,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,600;0,800;1,700;1,800;1,900&family=Figtree:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="estilo.css?v=16">
+<link rel="stylesheet" href="estilo.css?v=17">
 <style>body{margin:0} main.inicio{padding-block:24px 40px} main.inicio > .wrap{display:grid;gap:26px}</style>
 </head>
 <body>
@@ -117,7 +117,7 @@
   <a href="admin.html">Área Danni's</a>
 </footer>
 
-<script src="comum.js?v=4"></script>
+<script src="comum.js?v=5"></script>
 <script>
 (function(){
   const $ = s => document.querySelector(s);
@@ -225,8 +225,6 @@
       const grava = v => { try { localStorage.setItem("dt-som", v); } catch(e){} };
       async function carrega(){
         if (buf || carregando || !ac) return; carregando = true;
-        try { const a = await (await fetch("som-onibus.mp3?v=3")).arrayBuffer(); buf = await new Promise((ok, erro) => ac.decodeAudioData(a, ok, erro)); }
-        catch(e){ carregando = false; }
         try { const a = await (await fetch("musica-fofa.mp3?v=1")).arrayBuffer(); bufM = await new Promise((ok, erro) => ac.decodeAudioData(a, ok, erro)); } catch(e){}
       }
       // musiquinha infantil original (caixinha de música) de fundo, baixinha, repetindo sem emenda
@@ -250,7 +248,7 @@
       function para(){ if (fonte){ try { fonte.stop(); } catch(e){} fonte = null; } }
       document.addEventListener("visibilitychange", () => { if (document.hidden && musica){ try { musica.stop(); } catch(e){} musica = null; } });
       function toca(seg, dur){   // começa o som no segundo "seg" da volta
-        tocaMusica();
+        tocaMusica(); return;   // só a música (sem motor e buzina)
         if (fonte || !buf || !ac || ac.state !== "running" || document.hidden) return;
         if (dur === undefined && seg > buf.duration - 1.5) return;
         const f = ac.createBufferSource(); f.buffer = buf; f.connect(mestre);
@@ -263,7 +261,6 @@
         e.stopPropagation(); acorda();
         const on = !ligado(); grava(on ? "on" : "off"); bt.setAttribute("aria-pressed", on);
         if (mestre) mestre.gain.setTargetAtTime(on ? 1 : 0, ac.currentTime, .05);
-        if (on && !fonte) toca(4.25, .8);   // "fóm-fóm" pra mostrar que ligou
       });
       return {toca, para};
     }

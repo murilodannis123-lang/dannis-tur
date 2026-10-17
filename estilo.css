@@ -332,3 +332,19 @@ img.van{height:auto}
 .bt-zap svg{width:18px;height:18px;flex:none}
 .bt-zap:hover{background:#178a45}
 .bt-zap:focus-visible{outline:3px solid var(--laranja);outline-offset:2px}
+
+/* assinatura feita com o dedo na tela */
+.ct-ass div{position:relative}
+.ct-assinatura{position:absolute;left:50%;bottom:100%;transform:translateX(-50%);height:62px;width:auto;max-width:95%}
+.ct-ass.assinado{margin-top:78px!important}
+.ct-ass-info{font-size:10px;color:#555}
+.quadro-ass{display:grid;gap:8px}
+.quadro-ass h4{margin:0;font-family:var(--f-display);font-size:19px;color:var(--roxo)}
+.quadro-ass p{margin:0;font-size:14px;color:var(--tinta-2)}
+.pad-ass{position:relative;background:#fff;border:2px dashed #c9b3ca;border-radius:14px;height:170px;touch-action:none;overflow:hidden}
+.pad-ass.ok{border-style:solid;border-color:var(--roxo)}
+.pad-ass canvas{position:absolute;inset:0;width:100%;height:100%;cursor:crosshair}
+.pad-ass .linha-ass{position:absolute;left:8%;right:8%;bottom:38px;border-top:1.5px solid #bbb;pointer-events:none}
+.pad-ass .dica-ass{position:absolute;left:0;right:0;bottom:12px;text-align:center;font-size:13px;color:#999;pointer-events:none}
+.pad-ass.ok .dica-ass{display:none}
+.quadro-ass .btn-link{justify-self:start}

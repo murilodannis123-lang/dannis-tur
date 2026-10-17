@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,600;0,800;1,700;1,800;1,900&family=Figtree:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="estilo.css?v=3">
+<link rel="stylesheet" href="estilo.css?v=17">
 <style>
 body{margin:0}
 .pg{max-width:1080px;margin:0 auto;padding-block:18px 48px;display:grid;gap:16px}
@@ -130,13 +130,13 @@ body{margin:0}
 
 <div id="printArea"></div>
 
-<script src="comum.js?v=4"></script>
+<script src="comum.js?v=5"></script>
 <script>
 (function(){
   const $ = s => document.querySelector(s);
   const {api, API, esc, fmtData, brl, num, hojeISO, vigencia, nomeMes, INI, FIM, idade, zapLink, contratoHTML, preparaImpressao} = DT;
   const ss = {get(k){try{return sessionStorage.getItem(k)}catch(e){return null}}, set(k,v){try{sessionStorage.setItem(k,v)}catch(e){}}};
-  const NOMES = {aguardando_valor:"Aguardando valor", liberado:"Liberado", vai_entregar_impresso:"Vai entregar impresso", assinado_online:"Assinado (gov.br)", recebido:"Recebido", cancelado:"Cancelado"};
+  const NOMES = {aguardando_valor:"Aguardando valor", liberado:"Liberado", vai_entregar_impresso:"Vai entregar impresso", assinado_online:"Assinado", recebido:"Recebido", cancelado:"Cancelado"};
   const lsl = {get(k){try{return localStorage.getItem(k)}catch(e){return null}}, set(k,v){try{v?localStorage.setItem(k,v):localStorage.removeItem(k)}catch(e){}}};
   let senha = ss.get("dt-senha") || lsl.get("dt-senha-lembrar") || "", familias = [], filtro = "todos", atual = null;
 
@@ -244,7 +244,7 @@ body{margin:0}
     $("#bArquivo").hidden = !f.arquivo; if (f.arquivo) $("#bArquivo").href = f.arquivo;
     $("#bRecebido").hidden = !(f.status==="vai_entregar_impresso" || f.status==="liberado");
     $("#bCancelar").textContent = f.status==="cancelado" ? "Reativar esta renovação" : "Cancelar esta renovação";
-    if (lib) $("#bZap").href = zapLink(f.celular, `Olá, ${f.responsavel.split(" ")[0]}! 🚐 Seu contrato do transporte escolar 2027 da Danni's Tur está pronto para assinatura:\n${linkContrato(f)}`);
+    if (lib) $("#bZap").href = zapLink(f.celular, `Olá, ${f.responsavel.split(" ")[0]}! 🚐 ${f.assinatura ? "Seu contrato assinado do transporte escolar 2027 da Danni's Tur já está com o valor. Sua cópia:" : "Seu contrato do transporte escolar 2027 da Danni's Tur está pronto para assinatura:"}\n${linkContrato(f)}`);
   }
   function valores(){
     const pv = num($("#xPv").value), n = +$("#xParc").value || 0;
@@ -262,7 +262,7 @@ body{margin:0}
       const r = await api("admin_salvar", {senha, id:atual.id, valores:valores(), liberar});
       Object.assign(atual, r.familia); const i = familias.findIndex(f=>f.id===atual.id); if (i>=0) familias[i] = atual;
       estado(); previa();
-      $("#dOk").textContent = liberar ? "Liberado! Agora toque em 'Avisar a família no WhatsApp'." : "Salvo.";
+      $("#dOk").textContent = liberar ? (atual.assinatura ? "Liberado e assinado! Toque em 'Avisar a família no WhatsApp' pra mandar a cópia." : "Liberado! Agora toque em 'Avisar a família no WhatsApp'.") : "Salvo.";
     }catch(e){ $("#dOk").textContent = ""; $("#dErr").textContent = e.message; }
   }
   $("#bLiberar").onclick = ()=>salvar(atual.status==="aguardando_valor" ? true : false);
