@@ -133,24 +133,48 @@
 
   /* música de fundo: começa no primeiro toque na tela (menos no botão); se a pessoa desligar,
      fica desligada em todas as páginas e nas próximas visitas */
-  function musica(audio, botao){
-    if (!audio || !botao) return;
-    const K = "dt-musica";
-    const pref = () => { try { return localStorage.getItem(K); } catch(e){ return null; } };
-    const grava = v => { try { localStorage.setItem(K, v); } catch(e){} };
-    audio.volume = .35;
-    let iniciou = false;
-    const tocar = () => { const p = audio.play(); if (p) p.catch(()=>{}); };
-    botao.addEventListener("click", e => {
-      e.stopPropagation(); iniciou = true;
-      if (audio.paused){ grava("on"); tocar(); } else { grava("off"); audio.pause(); }
+  /* música de fundo baixinha em todas as páginas (caixinha de música original, repete sem emenda).
+     Começa no primeiro toque na tela (regra dos celulares); o botão "Som" liga/desliga e fica lembrado */
+  function musicaFundo(){
+    if (window.__dtMusica) return; window.__dtMusica = true;
+    const VOL = .13;
+    const ligado = () => { try { return localStorage.getItem("dt-som") !== "off"; } catch(e){ return true; } };
+    const grava = v => { try { localStorage.setItem("dt-som", v); } catch(e){} };
+    let bt = document.getElementById("som");
+    if (!bt){
+      bt = document.createElement("button"); bt.type = "button"; bt.className = "som"; bt.id = "som"; bt.setAttribute("aria-label", "Ligar ou desligar a música");
+      bt.innerHTML = '<svg class="off" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M17 9l5 6M22 9l-5 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><svg class="on" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span>Som</span>';
+      document.body.appendChild(bt);
+    }
+    bt.setAttribute("aria-pressed", ligado());
+    let ac = null, ganho = null, buf = null, fonte = null, baixando = false;
+    async function baixa(){
+      if (buf || baixando) return; baixando = true;
+      try { const a = await (await fetch("musica-fofa.mp3?v=1")).arrayBuffer(); buf = await new Promise((ok, erro) => ac.decodeAudioData(a, ok, erro)); toca(); }
+      catch(e){ baixando = false; }
+    }
+    function toca(){
+      if (fonte || !buf || !ac || ac.state !== "running" || document.hidden) return;
+      const f = ac.createBufferSource(); f.buffer = buf; f.loop = true; f.loopStart = 0; f.loopEnd = Math.min(buf.duration, 64 * 60 / 112);
+      f.connect(ganho); f.start(); fonte = f;
+    }
+    function para(){ if (fonte){ try { fonte.stop(); } catch(e){} fonte = null; } }
+    function acorda(){
+      try {
+        if (navigator.audioSession) navigator.audioSession.type = "playback";   // iPhone: toca mesmo no silencioso
+        ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+        if (!ganho){ ganho = ac.createGain(); ganho.gain.value = ligado() ? VOL : 0; ganho.connect(ac.destination); }
+        const pronto = () => { baixa(); toca(); };
+        if (ac.state !== "running") ac.resume().then(pronto, () => {}); else pronto();
+      } catch(e){}
+    }
+    ["pointerdown", "touchend", "click", "keydown"].forEach(ev => document.addEventListener(ev, acorda, {passive:true}));
+    document.addEventListener("visibilitychange", () => { if (document.hidden) para(); else if (ac) acorda(); });
+    bt.addEventListener("click", e => {
+      e.stopPropagation(); acorda();
+      const on = !ligado(); grava(on ? "on" : "off"); bt.setAttribute("aria-pressed", on);
+      if (ganho) ganho.gain.setTargetAtTime(on ? VOL : 0, ac.currentTime, .1);
     });
-    document.addEventListener("pointerdown", e => {
-      if (iniciou || e.target.closest("#" + botao.id) || pref() === "off") return;
-      iniciou = true; tocar();
-    });
-    audio.onplay = () => botao.setAttribute("aria-pressed", "true");
-    audio.onpause = () => botao.setAttribute("aria-pressed", "false");
   }
 
   /* ---------- servidor ---------- */
@@ -202,5 +226,8 @@
   }
 
   window.DT = {padAssinatura, API, ZAP_DANNIS, CONTRATADO, ESCOLAS, MESES, INI, FIM, nomeMes, esc, fmtData, brl, num, hojeISO, vigencia, idade,
-               maskCpf, maskTel, cpfValido, soDigitos, zapLink, contratoHTML, api, preparaImpressao, linkContrato, musica};
+               maskCpf, maskTel, cpfValido, soDigitos, zapLink, contratoHTML, api, preparaImpressao, linkContrato, musicaFundo};
+  if (!/admin\.html/.test(location.pathname)){
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", musicaFundo); else musicaFundo();
+  }
 })();

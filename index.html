@@ -124,7 +124,7 @@
   <a href="admin.html">Área Danni's</a>
 </footer>
 
-<script src="comum.js?v=6"></script>
+<script src="comum.js?v=7"></script>
 <script>
 (function(){
   const $ = s => document.querySelector(s);
@@ -202,7 +202,7 @@
     } catch(e){}
     if (calmo){ fumaca.innerHTML = '<div class="fumo-txt fixo">25 anos</div>'; return; }   // quem pediu menos movimento vê a van parada no meio
     estrada.classList.add("js");
-    const som = criaSom();
+    const som = {toca(){}, para(){}};   // a música de fundo fica no comum.js (todas as páginas)
     const T = {entra: 3400, parada: 2200, sai: 7600, vazio: 1400};
     const ciclo = T.entra + T.parada + T.sai + T.vazio;
     const outQuart = t => 1 - Math.pow(1 - t, 4), inQuad = t => t * t;
@@ -262,54 +262,6 @@
       fumaca.appendChild(p); p.addEventListener("animationend", () => p.remove());
     }
 
-    /* barulho de ônibus a diesel de verdade (arquivo som-onibus.mp3, 14,6 s = uma volta da animação):
-       motor chegando, chiado do freio, "tsssh" do freio a ar, buzina "fóm-fóm" e motor saindo.
-       Toca depois do primeiro toque na tela; o botão "Som" liga e desliga (fica lembrado) */
-    function criaSom(){
-      let ac = null, mestre = null, buf = null, fonte = null, carregando = false, bufM = null, musica = null;
-      const ligado = () => { try { return localStorage.getItem("dt-som") !== "off"; } catch(e){ return true; } };
-      const grava = v => { try { localStorage.setItem("dt-som", v); } catch(e){} };
-      async function carrega(){
-        if (buf || carregando || !ac) return; carregando = true;
-        try { const a = await (await fetch("musica-fofa.mp3?v=1")).arrayBuffer(); bufM = await new Promise((ok, erro) => ac.decodeAudioData(a, ok, erro)); } catch(e){}
-      }
-      // musiquinha infantil original (caixinha de música) de fundo, baixinha, repetindo sem emenda
-      function tocaMusica(){
-        if (musica || !bufM || !ac || ac.state !== "running" || document.hidden) return;
-        const f = ac.createBufferSource(), g = ac.createGain();
-        f.buffer = bufM; f.loop = true; f.loopStart = 0; f.loopEnd = Math.min(bufM.duration, 64 * 60 / 112);
-        g.gain.value = .13; f.connect(g); g.connect(mestre); f.start(); musica = f;
-      }
-      function acorda(){
-        try {
-          if (navigator.audioSession) navigator.audioSession.type = "playback";   // iPhone: toca mesmo no silencioso (Safari 17+)
-          ac = ac || new (window.AudioContext || window.webkitAudioContext)();
-          if (!mestre){ mestre = ac.createGain(); mestre.gain.value = ligado() ? 1 : 0; mestre.connect(ac.destination); }
-          if (ac.state !== "running") ac.resume();
-          const b = ac.createBuffer(1, 1, 22050), z = ac.createBufferSource(); z.buffer = b; z.connect(ac.destination); z.start(0);   // destrava o áudio no iPhone
-          carrega();
-        } catch(e){}
-      }
-      ["pointerdown", "touchend", "click", "keydown"].forEach(ev => document.addEventListener(ev, acorda, {passive:true}));
-      function para(){ if (fonte){ try { fonte.stop(); } catch(e){} fonte = null; } }
-      document.addEventListener("visibilitychange", () => { if (document.hidden && musica){ try { musica.stop(); } catch(e){} musica = null; } });
-      function toca(seg, dur){   // começa o som no segundo "seg" da volta
-        tocaMusica(); return;   // só a música (sem motor e buzina)
-        if (fonte || !buf || !ac || ac.state !== "running" || document.hidden) return;
-        if (dur === undefined && seg > buf.duration - 1.5) return;
-        const f = ac.createBufferSource(); f.buffer = buf; f.connect(mestre);
-        f.onended = () => { if (fonte === f) fonte = null; };
-        f.start(0, seg, dur); fonte = f;
-        if (dur !== undefined) fonte = null;   // buzinada avulsa não trava o som da volta
-      }
-      const bt = $("#som"); bt.setAttribute("aria-pressed", ligado());
-      bt.addEventListener("click", e => {
-        e.stopPropagation(); acorda();
-        const on = !ligado(); grava(on ? "on" : "off"); bt.setAttribute("aria-pressed", on);
-        if (mestre) mestre.gain.setTargetAtTime(on ? 1 : 0, ac.currentTime, .05);
-      });
-      return {toca, para};
-    }
   })();
 
   /* ---------- instalar o app (Android: botão do sistema; iPhone: passo a passo) ---------- */
