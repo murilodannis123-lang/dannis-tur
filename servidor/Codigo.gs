@@ -203,6 +203,12 @@ function configurar(){
   return "Pronto. Agora troque a senha em Configurações do projeto › Propriedades do script.";
 }
 
+/* manda uma mensagem de teste no WhatsApp do dono (rodar à mão no editor) */
+function testeAviso(){
+  const ok = avisaDono_("✅ Teste: os avisos da Danni's Tur (contratos e aniversariantes) estão chegando no seu WhatsApp.");
+  return ok ? "Enviado." : "Não enviou: confira a chave do CallMeBot nas propriedades do script.";
+}
+
 /* apaga TODAS as famílias da planilha (fica só o cabeçalho). Rodar à mão no editor, só pra zerar testes. */
 function zerarTestes(){
   const sh = aba_(), n = sh.getLastRow();
