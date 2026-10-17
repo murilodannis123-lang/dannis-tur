@@ -116,9 +116,9 @@
       <p class="ct-cl"><b>Cláusula 13.</b> Fica eleito o foro da Comarca de Sumaré, com prevalência sobre qualquer outro, por mais privilegiado que seja, para dirimir todas as dúvidas que possam advir de qualquer cláusula deste contrato. E, por estarem assim justos e contratados e de pleno acordo com todas as cláusulas estipuladas, assinam o presente instrumento particular em duas vias de igual teor e forma e sem rasura.</p>
       <p>${dataExtenso(x.dataContrato)}</p>
       <p><b>Ciente e de acordo,</b></p>
-      <div class="ct-ass${f.assinatura ? " assinado" : ""}">
+      <div class="ct-ass${f.assinatura || f.assinaturaDannis ? " assinado" : ""}">
         <div>${f.assinatura && /^data:image\/(png|jpeg);base64,/.test(f.assinatura) ? `<img class="ct-assinatura" src="${f.assinatura}" alt="Assinatura de ${esc(f.responsavel)}">` : ""}CONTRATANTE<br><b>${esc(f.responsavel)}</b><br>CPF ${esc(f.cpf)}<br>Reconheço e pagarei a dívida representada.${f.assinatura ? `<br><small class="ct-ass-info">Assinado eletronicamente na tela${f.assinadoEm ? ` em ${fmtData(String(f.assinadoEm).slice(0,10))} às ${String(f.assinadoEm).slice(11,16)}` : ""}</small>` : ""}</div>
-        <div>CONTRATADO<br><b>${CONTRATADO.razao}</b><br>${CONTRATADO.fantasia} · CNPJ ${CONTRATADO.cnpj}</div>
+        <div>${f.assinaturaDannis && /^data:image\/(png|jpeg);base64,/.test(f.assinaturaDannis) ? `<img class="ct-assinatura" src="${f.assinaturaDannis}" alt="Assinatura da Danni's Tur">` : ""}CONTRATADO<br><b>${CONTRATADO.razao}</b><br>${CONTRATADO.fantasia} · CNPJ ${CONTRATADO.cnpj}${f.assinaturaDannis && f.assinadoDannisEm ? `<br><small class="ct-ass-info">Assinado eletronicamente em ${fmtData(String(f.assinadoDannisEm).slice(0,10))} às ${String(f.assinadoDannisEm).slice(11,16)}</small>` : ""}</div>
       </div>
       <p class="ct-frase">“A boa reputação vale mais que grandes riquezas.”</p>
     </article>`;
@@ -169,6 +169,38 @@
     pa.innerHTML = html;
   }
 
-  window.DT = {API, ZAP_DANNIS, CONTRATADO, ESCOLAS, MESES, INI, FIM, nomeMes, esc, fmtData, brl, num, hojeISO, vigencia, idade,
+  /* quadro de assinatura com o dedo: pad = caixa, cv = canvas; onMuda() é chamado a cada traço */
+  function padAssinatura(pad, cv, onMuda){
+    const ctx = cv.getContext("2d"); let tracos = [], atual = null;
+    const cor = "#1b2a6b";
+    function ajusta(){ const r = cv.getBoundingClientRect(), dpr = Math.min(window.devicePixelRatio || 1, 3); if (!r.width) return; cv.width = Math.round(r.width*dpr); cv.height = Math.round(r.height*dpr); ctx.setTransform(dpr,0,0,dpr,0,0); desenha(); }
+    function desenha(){ const r = cv.getBoundingClientRect(); ctx.clearRect(0,0,r.width,r.height); ctx.lineCap = ctx.lineJoin = "round"; ctx.strokeStyle = cor; ctx.lineWidth = 1.5;
+      tracos.forEach(t => { ctx.beginPath(); t.forEach((p,i) => i ? ctx.lineTo(p[0],p[1]) : ctx.moveTo(p[0],p[1])); if (t.length === 1) ctx.lineTo(t[0][0]+.1, t[0][1]); ctx.stroke(); }); }
+    const ponto = e => { const r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+    const avisa = () => { pad.classList.toggle("ok", feita()); onMuda && onMuda(); };
+    cv.addEventListener("pointerdown", e => { e.preventDefault(); cv.setPointerCapture(e.pointerId); atual = [ponto(e)]; tracos.push(atual); desenha(); });
+    cv.addEventListener("pointermove", e => { if (!atual) return; e.preventDefault(); atual.push(ponto(e)); desenha(); });
+    const fim = () => { if (!atual) return; atual = null; avisa(); };
+    cv.addEventListener("pointerup", fim); cv.addEventListener("pointercancel", fim);
+    window.addEventListener("resize", () => { if (cv.offsetParent) ajusta(); });
+    const feita = () => tracos.reduce((n,t) => n + t.length, 0) >= 12;
+    function limpa(){ tracos = []; desenha(); avisa(); }
+    function desfaz(){ tracos.pop(); desenha(); avisa(); }
+    function imagem(){
+      const xs = tracos.flat().map(p => p[0]), ys = tracos.flat().map(p => p[1]);
+      const m = 6, x0 = Math.min(...xs)-m, y0 = Math.min(...ys)-m, w = Math.max(...xs)-x0+m, h = Math.max(...ys)-y0+m;
+      for (const alt of [120, 90, 70]){
+        const k = alt/Math.max(h,1), W = Math.max(40, Math.round(Math.min(w*k, 520))), K = Math.min(k, W/w);
+        const c = document.createElement("canvas"); c.width = W; c.height = Math.round(h*K)+2; const g = c.getContext("2d");
+        g.lineCap = g.lineJoin = "round"; g.strokeStyle = cor; g.lineWidth = Math.max(1.1, 1.5*K);
+        tracos.forEach(t => { g.beginPath(); t.forEach((p,i) => { const X = (p[0]-x0)*K, Y = (p[1]-y0)*K; i ? g.lineTo(X,Y) : g.moveTo(X,Y); }); if (t.length === 1) g.lineTo((t[0][0]-x0)*K+.1, (t[0][1]-y0)*K); g.stroke(); });
+        const url = c.toDataURL("image/png"); if (url.length < 45000) return url;
+      }
+      return "";
+    }
+    return {ajusta, feita, imagem, limpa, desfaz, vazio: () => !tracos.length};
+  }
+
+  window.DT = {padAssinatura, API, ZAP_DANNIS, CONTRATADO, ESCOLAS, MESES, INI, FIM, nomeMes, esc, fmtData, brl, num, hojeISO, vigencia, idade,
                maskCpf, maskTel, cpfValido, soDigitos, zapLink, contratoHTML, api, preparaImpressao, linkContrato, musica};
 })();

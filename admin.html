@@ -23,7 +23,16 @@ body{margin:0}
 .num[aria-pressed="true"]{border-color:var(--roxo);box-shadow:0 0 0 3px rgba(113,36,115,.15)}
 .num b{font-family:var(--f-display);font-size:32px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
 .num span{font-size:13px;font-weight:700;color:var(--tinta-2)}
-.num.esp b{color:#b7550c}.num.lib b{color:#1677c9}.num.ass b{color:var(--ok)}
+.num.esp b{color:#b7550c}.num.lib b{color:#1677c9}.num.ass b{color:var(--ok)}.num.falta b{color:#c2332b}
+.pill.falta{background:#ffe3e1;color:#b3261e}
+.minha-ass{display:grid;gap:10px}
+.minha-ass h3{font-size:18px}
+.minha-ass .img-ass{background:#fff;border:1.5px solid var(--linha);border-radius:12px;padding:10px;display:flex;justify-content:center}
+.minha-ass .img-ass img{max-height:70px;max-width:100%}
+.btn-verde{background:#1fa855;color:#fff;border:0;display:inline-flex;align-items:center;justify-content:center;gap:8px;text-decoration:none}
+.btn-verde:hover{background:#178a45}
+.btn-verde svg{width:20px;height:20px}
+.btn-verde[aria-disabled="true"]{opacity:.5;pointer-events:none}
 .aniv{background:linear-gradient(135deg,#fff6d6,#ffe9f2);border:1.5px solid #f3d8a0;border-radius:16px;padding:14px 16px;display:grid;gap:10px}
 .aniv h3{font-size:19px}
 .aniv ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}
@@ -78,6 +87,23 @@ body{margin:0}
   <section id="painel" hidden style="display:grid;gap:16px">
     <div class="placar" id="placar"></div>
     <div class="aniv" id="aniv" hidden></div>
+    <div class="card minha-ass" id="minhaAss">
+      <h3>✍️ Minha assinatura (Danni's Tur)</h3>
+      <div id="assSalva" hidden>
+        <div class="img-ass"><img id="assImg" alt="Sua assinatura salva"></div>
+        <button type="button" class="btn btn-link" id="trocaAss" style="justify-self:start">Trocar assinatura</button>
+      </div>
+      <div id="assNova" class="quadro-ass" hidden>
+        <p>Assine uma vez aqui. Depois é só tocar no botão verde de cada família que a sua assinatura entra no contrato.</p>
+        <div class="pad-ass" id="padDannis"><canvas id="cvDannis" aria-label="Quadro pra assinar"></canvas><div class="linha-ass"></div><div class="dica-ass">assine sobre a linha</div></div>
+        <div class="bts-ass">
+          <button type="button" class="btn btn-sec" id="desfazDannis">Voltar traço</button>
+          <button type="button" class="btn btn-sec" id="limpaDannis">Apagar</button>
+          <button type="button" class="btn btn-pri" id="salvaDannis" disabled>Salvar minha assinatura</button>
+        </div>
+        <p class="msg-err" id="assErr" role="alert"></p>
+      </div>
+    </div>
     <div class="busca">
       <input type="search" id="busca" placeholder="Buscar por nome, aluno, escola ou telefone">
       <button class="btn btn-sec" type="button" id="atualizar">Atualizar</button>
@@ -114,6 +140,8 @@ body{margin:0}
           <div class="btns">
             <button class="btn btn-pri" type="button" id="bLiberar">Salvar e liberar pra assinatura</button>
             <button class="btn btn-sec" type="button" id="bSalvar">Só salvar (não libera)</button>
+            <a class="btn btn-verde" id="bAssinar" href="#" target="_blank" rel="noopener" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Enviar contrato assinado pra família</span></a>
+            <p class="dica" id="bAssinarDica" hidden></p>
             <a class="btn btn-zap" id="bZap" href="#" target="_blank" rel="noopener" hidden>Avisar a família no WhatsApp</a>
             <button class="btn btn-sec" type="button" id="bCopiar" hidden>Copiar link do contrato</button>
             <a class="btn btn-sec" id="bArquivo" href="#" target="_blank" rel="noopener" hidden>Ver contrato assinado</a>
@@ -130,7 +158,7 @@ body{margin:0}
 
 <div id="printArea"></div>
 
-<script src="comum.js?v=5"></script>
+<script src="comum.js?v=6"></script>
 <script>
 (function(){
   const $ = s => document.querySelector(s);
@@ -138,7 +166,8 @@ body{margin:0}
   const ss = {get(k){try{return sessionStorage.getItem(k)}catch(e){return null}}, set(k,v){try{sessionStorage.setItem(k,v)}catch(e){}}};
   const NOMES = {aguardando_valor:"Aguardando valor", liberado:"Liberado", vai_entregar_impresso:"Vai entregar impresso", assinado_online:"Assinado", recebido:"Recebido", cancelado:"Cancelado"};
   const lsl = {get(k){try{return localStorage.getItem(k)}catch(e){return null}}, set(k,v){try{v?localStorage.setItem(k,v):localStorage.removeItem(k)}catch(e){}}};
-  let senha = ss.get("dt-senha") || lsl.get("dt-senha-lembrar") || "", familias = [], filtro = "todos", atual = null;
+  let senha = ss.get("dt-senha") || lsl.get("dt-senha-lembrar") || "", familias = [], filtro = "todos", atual = null, minhaAssinatura = "";
+  const faltaVoce = f => f.status !== "cancelado" && !!f.assinatura && num((f.valores||{}).mensalidade) > 0 && !f.assinadoDannisEm;
 
   /* ---------- login ---------- */
   $("#fLogin").addEventListener("submit", async e=>{
@@ -151,7 +180,7 @@ body{margin:0}
 
   async function carregar(){
     $("#painelMsg").textContent = "Carregando…";
-    try{ const r = await api("admin_lista", {senha}); familias = r.familias.reverse(); $("#painelMsg").textContent = ""; desenha(); abrePeloLink(); }
+    try{ const r = await api("admin_lista", {senha}); familias = r.familias.reverse(); minhaAssinatura = r.assinaturaDannis || ""; mostraMinhaAss(); $("#painelMsg").textContent = ""; desenha(); abrePeloLink(); }
     catch(e){ if (e.codigo==="senha"){ sair(); } else $("#painelMsg").textContent = "Não consegui carregar. Toque em Atualizar."; }
   }
   function sair(){ ss.set("dt-senha",""); lsl.set("dt-senha-lembrar",""); $("#painel").hidden = true; $("#detalhe").hidden = true; $("#fLogin").hidden = false; }
@@ -168,13 +197,14 @@ body{margin:0}
     const ativos = familias.filter(f=>f.status!=="cancelado");
     const c = {esp:0, lib:0, ass:0}; ativos.forEach(f=>c[grupo(f.status)]++);
     const alunos = ativos.reduce((s,f)=>s+f.alunos.length,0);
-    const cards = [["todos","",ativos.length,"Renovações"],["esp","esp",c.esp,"Aguardando valor"],["lib","lib",c.lib,"Liberados"],["ass","ass",c.ass,"Assinados"],["alunos","",alunos,"Alunos"]];
+    const falta = ativos.filter(faltaVoce).length;
+    const cards = [["todos","",ativos.length,"Contratos"],["falta","falta",falta,"Falta você assinar"],["esp","esp",c.esp,"Aguardando valor"],["ass","ass",c.ass,"Assinados"],["alunos","",alunos,"Alunos"]];
     $("#placar").innerHTML = cards.map(([k,cls,n,t])=>`<button type="button" class="num ${cls}" data-f="${k}" aria-pressed="${filtro===k}"><b>${n}</b><span>${t}</span></button>`).join("");
     $("#placar").querySelectorAll(".num").forEach(b=>b.onclick=()=>{ filtro = b.dataset.f==="alunos" ? "todos" : b.dataset.f; desenha(); });
     aniversarios(ativos);
     const q = $("#busca").value.trim().toLowerCase();
     const lista = familias.filter(f=>{
-      if (filtro==="todos" ? f.status==="cancelado" : grupo(f.status)!==filtro) return false;
+      if (filtro==="falta" ? !faltaVoce(f) : filtro==="todos" ? f.status==="cancelado" : grupo(f.status)!==filtro) return false;
       if (!q) return true;
       return [f.responsavel, f.celular, f.cpf, ...f.alunos.map(a=>a.nome+" "+a.escola)].join(" ").toLowerCase().includes(q);
     });
@@ -182,7 +212,7 @@ body{margin:0}
       <button type="button" class="fam" data-id="${f.id}">
         <span class="n">${f.id}</span>
         <span><b>${esc(f.responsavel)}</b>${f.tipo==="novo"?' <em class="tag-novo">Contrato novo</em>':''}<small>${f.alunos.map(a=>`${esc(a.nome)} · ${esc(a.escola)}`).join(" · ")}</small><small>${esc(f.celular)} · cadastro ${fmtData(f.dataCadastro)}${f.valores && num(f.valores.mensalidade) ? ` · R$ ${brl(num(f.valores.mensalidade))}/mês` : ""}</small></span>
-        <span class="pill ${f.status}">${NOMES[f.status]||f.status}</span>
+        ${faltaVoce(f) ? '<span class="pill falta">Falta você assinar</span>' : `<span class="pill ${f.status}">${NOMES[f.status]||f.status}</span>`}
       </button>`).join("") : `<div class="vazio">${familias.length ? "Nada nesse filtro." : "Nenhuma renovação ainda. Quando um pai confirmar no site, ela aparece aqui e você recebe aviso no WhatsApp."}</div>`;
     $("#lista").querySelectorAll(".fam").forEach(b=>b.onclick=()=>abrir(b.dataset.id));
   }
@@ -194,12 +224,12 @@ body{margin:0}
     ativos.forEach(f=>f.alunos.forEach(a=>{
       if (!a.nasc) return; const [y,m,d] = a.nasc.split("-").map(Number);
       let prox = new Date(hoje.getFullYear(), m-1, d); if (prox < hoje) prox = new Date(hoje.getFullYear()+1, m-1, d);
-      const dias = Math.round((prox-hoje)/864e5); if (dias > 30) return;
+      const dias = Math.round((prox-hoje)/864e5); if (dias !== 0) return;   // só quem faz aniversário hoje
       itens.push({a, f, dias, faz: prox.getFullYear()-y, data:`${String(d).padStart(2,"0")}/${String(m).padStart(2,"0")}`});
     }));
     itens.sort((x,y)=>x.dias-y.dias);
     $("#aniv").hidden = !itens.length; if (!itens.length) return;
-    $("#aniv").innerHTML = `<h3>🎂 Aniversariantes dos próximos 30 dias</h3><ul>${itens.map(i=>`
+    $("#aniv").innerHTML = `<h3>🎂 Aniversariantes de hoje</h3><ul>${itens.map(i=>`
       <li class="${i.dias===0?"hoje":""}"><span><b>${esc(i.a.nome)}</b> faz ${i.faz} ${i.dias===0?"<b>HOJE</b>":i.dias===1?"amanhã":`em ${i.data}`}<br><small>${esc(i.a.escola)} · ${esc(i.f.responsavel)}</small></span>
       <a class="btn btn-zap" style="padding:8px 12px;font-size:14px" target="_blank" rel="noopener" href="${zapLink(i.f.celular, `Parabéns, ${i.a.nome.split(" ")[0]}! 🎉🎂 Feliz ${i.faz} ${i.faz===1?"ano":"anos"}! Um abraço de toda a turma da Danni's Tur. 🚐💜`)}">Mandar parabéns</a></li>`).join("")}</ul>`;
   }
@@ -240,17 +270,19 @@ body{margin:0}
     $("#dPill").className = "pill " + f.status; $("#dPill").textContent = NOMES[f.status] || f.status;
     $("#bLiberar").textContent = lib ? "Salvar alterações" : "Salvar e liberar pra assinatura";
     $("#bSalvar").hidden = lib;
-    $("#bZap").hidden = !lib; $("#bCopiar").hidden = !lib;
+    $("#bZap").hidden = !lib || !!f.assinatura; $("#bCopiar").hidden = !lib;
     $("#bArquivo").hidden = !f.arquivo; if (f.arquivo) $("#bArquivo").href = f.arquivo;
     $("#bRecebido").hidden = !(f.status==="vai_entregar_impresso" || f.status==="liberado");
     $("#bCancelar").textContent = f.status==="cancelado" ? "Reativar esta renovação" : "Cancelar esta renovação";
+    botaoVerde();
     if (lib) $("#bZap").href = zapLink(f.celular, `Olá, ${f.responsavel.split(" ")[0]}! 🚐 ${f.assinatura ? "Seu contrato assinado do transporte escolar 2027 da Danni's Tur já está com o valor. Sua cópia:" : "Seu contrato do transporte escolar 2027 da Danni's Tur está pronto para assinatura:"}\n${linkContrato(f)}`);
   }
   function valores(){
     const pv = num($("#xPv").value), n = +$("#xParc").value || 0;
     return {ini:+$("#xIni").value, mensalidade:pv, parcelas:n, total: num($("#xTot").value) || pv*n, dataContrato:$("#xData").value, obsInterna:$("#xObs").value.trim()};
   }
-  function previa(){ $("#dFolha").innerHTML = contratoHTML(atual, valores()); }
+  const comDannis = f => f.assinadoDannisEm && minhaAssinatura ? {...f, assinaturaDannis: minhaAssinatura} : f;
+  function previa(){ $("#dFolha").innerHTML = contratoHTML(comDannis(atual), valores()); }
   const recalc = ()=>{ const pv=num($("#xPv").value), n=+$("#xParc").value; if (pv && n && !$("#xTot").dataset.manual) $("#xTot").value = brl(pv*n); previa(); };
   $("#xIni").onchange = ()=>{ const vg = vigencia(null, +$("#xIni").value); $("#xMeses").value = vg.meses; $("#xParc").value = vg.meses; recalc(); };
   $("#xPv").oninput = recalc; $("#xParc").oninput = recalc; $("#xData").oninput = previa;
@@ -268,7 +300,7 @@ body{margin:0}
   $("#bLiberar").onclick = ()=>salvar(atual.status==="aguardando_valor" ? true : false);
   $("#bSalvar").onclick = ()=>salvar(false);
   $("#bCopiar").onclick = async ()=>{ try{ await navigator.clipboard.writeText(linkContrato(atual)); $("#dOk").textContent = "Link copiado."; }catch(e){ $("#dOk").textContent = linkContrato(atual); } };
-  $("#bImprimir").onclick = ()=>{ preparaImpressao(contratoHTML(atual, valores())); window.print(); };
+  $("#bImprimir").onclick = ()=>{ preparaImpressao(contratoHTML(comDannis(atual), valores())); window.print(); };
   async function mudaStatus(st){
     try{ const r = await api("admin_status", {senha, id:atual.id, status:st}); Object.assign(atual, r.familia); estado(); $("#dOk").textContent = "Atualizado."; }
     catch(e){ $("#dErr").textContent = e.message; }
@@ -280,6 +312,46 @@ body{margin:0}
     $("#bCancelar").dataset.conf=""; mudaStatus("cancelado");
   };
   $("#voltar").onclick = ()=>{ $("#detalhe").hidden = true; $("#painel").hidden = false; desenha(); };
+
+  /* ---------- minha assinatura ---------- */
+  const padD = DT.padAssinatura($("#padDannis"), $("#cvDannis"), () => { $("#salvaDannis").disabled = !padD.feita(); });
+  function mostraMinhaAss(){
+    $("#assSalva").hidden = !minhaAssinatura; $("#assNova").hidden = !!minhaAssinatura;
+    if (minhaAssinatura) $("#assImg").src = minhaAssinatura; else setTimeout(padD.ajusta, 50);
+  }
+  $("#trocaAss").onclick = () => { $("#assSalva").hidden = true; $("#assNova").hidden = false; padD.limpa(); setTimeout(padD.ajusta, 50); };
+  $("#desfazDannis").onclick = () => padD.desfaz();
+  $("#limpaDannis").onclick = () => padD.limpa();
+  $("#salvaDannis").onclick = async () => {
+    const b = $("#salvaDannis"); b.disabled = true; b.textContent = "Salvando…"; $("#assErr").textContent = "";
+    try { const img = padD.imagem(); await api("admin_minha_assinatura", {senha, assinatura: img}); minhaAssinatura = img; mostraMinhaAss(); if (atual) estado(); }
+    catch(e){ $("#assErr").textContent = e.message || "Não consegui salvar. Tente de novo."; b.disabled = false; }
+    b.textContent = "Salvar minha assinatura";
+  };
+
+  /* ---------- botão verde: assina pela Danni's e manda o contrato pra família no WhatsApp ---------- */
+  function botaoVerde(){
+    const f = atual, bt = $("#bAssinar"), dica = $("#bAssinarDica");
+    const pode = f && f.status !== "cancelado" && !!f.assinatura;
+    bt.hidden = !pode; dica.hidden = true; if (!pode) return;
+    const temValor = num((f.valores||{}).mensalidade) > 0;
+    bt.querySelector("span").textContent = f.assinadoDannisEm ? "Reenviar contrato assinado pra família" : "Enviar contrato assinado pra família";
+    let motivo = !minhaAssinatura ? "Crie a sua assinatura no quadro “Minha assinatura” (na lista) pra liberar este botão." : !temValor ? "Coloque o valor e salve antes de enviar." : "";
+    bt.setAttribute("aria-disabled", motivo ? "true" : "false");
+    if (motivo){ dica.hidden = false; dica.textContent = motivo; }
+    bt.href = zapLink(f.celular, `Olá, ${f.responsavel.split(" ")[0]}! 🚐💜 Seja bem-vindo à família Danni's! Aqui está o seu contrato do transporte escolar 2027, assinado pela família e pela Danni's Tur:\n${linkContrato(f)}`);
+  }
+  $("#bAssinar").addEventListener("click", async e => {
+    if ($("#bAssinar").getAttribute("aria-disabled") === "true"){ e.preventDefault(); return; }
+    // o WhatsApp abre na hora (link); a assinatura é registrada no servidor em paralelo
+    $("#dErr").textContent = ""; $("#dOk").textContent = "Assinando…";
+    try{
+      const r = await api("admin_assinar_dannis", {senha, id: atual.id});
+      Object.assign(atual, r.familia); const i = familias.findIndex(x=>x.id===atual.id); if (i>=0) familias[i] = atual;
+      estado(); previa();
+      $("#dOk").textContent = "Contrato assinado e enviado pra família" + (r.email ? " (WhatsApp e e-mail)." : " no WhatsApp.");
+    }catch(err){ $("#dOk").textContent = ""; $("#dErr").textContent = err.message; }
+  });
 
   if (senha && API) entrar().catch(sair);
 })();

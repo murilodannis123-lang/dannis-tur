@@ -11,7 +11,7 @@
 const ABA = "Renovações";
 const COLS = ["id","token","criado_em","status","responsavel","cpf","rg","celular","fone_casa","outro_fone","email",
               "rua","bairro","cidade","cep","alunos_texto","alunos_json","obs","data_cadastro",
-              "inicio_idx","mensalidade","parcelas","total","data_contrato","liberado_em","assinado_em","arquivo_url","observacao_interna","tipo","assinatura","assinatura_info"];
+              "inicio_idx","mensalidade","parcelas","total","data_contrato","liberado_em","assinado_em","arquivo_url","observacao_interna","tipo","assinatura","assinatura_info","assinado_dannis_em"];
 const STATUS = {AGUARDANDO:"aguardando_valor", LIBERADO:"liberado", ASSINADO:"assinado_online", IMPRESSO:"vai_entregar_impresso", RECEBIDO:"recebido", CANCELADO:"cancelado"};
 const FUSO = "America/Sao_Paulo";
 const SITE = "https://murilodannis123-lang.github.io/dannis-tur/";
@@ -34,6 +34,8 @@ function doPost(e){
       case "admin_lista":      admin_(req); return json_(lista_());
       case "admin_salvar":     admin_(req); return json_(salvar_(req));
       case "admin_status":     admin_(req); return json_(mudaStatus_(req));
+      case "admin_minha_assinatura": admin_(req); return json_(minhaAssinatura_(req));
+      case "admin_assinar_dannis": admin_(req); return json_(assinarDannis_(req));
       case "admin_teste_zap":  admin_(req); return json_({ok:true, enviado: avisaDono_("✅ Teste: os avisos da Danni's Tur estão chegando no seu WhatsApp.")});
       default:                 return json_({ok:false, erro:"Ação desconhecida"});
     }
@@ -82,6 +84,7 @@ function ver_(token){
   const f = publico_(r.obj);
   const liberado = [STATUS.LIBERADO, STATUS.ASSINADO, STATUS.IMPRESSO, STATUS.RECEBIDO].indexOf(r.obj.status) >= 0;
   if (!liberado){ delete f.valores; }
+  if (r.obj.assinado_dannis_em){ f.assinaturaDannis = cfg_("assinatura_dannis"); f.assinadoDannisEm = r.obj.assinado_dannis_em; }
   return {ok:true, familia:f, liberado};
 }
 
@@ -119,7 +122,38 @@ function admin_(req){
 function lista_(){
   const sh = aba_(), vals = sh.getDataRange().getValues(); vals.shift();
   const familias = vals.filter(l => l[0] !== "").map(l => completo_(obj_(l)));
-  return {ok:true, familias, hoje: hoje_()};
+  return {ok:true, familias, hoje: hoje_(), assinaturaDannis: cfg_("assinatura_dannis")};
+}
+
+/* assinatura da Danni's Tur: desenhada uma vez no admin e reaproveitada em todos os contratos */
+function minhaAssinatura_(req){
+  const a = String(req.assinatura || "");
+  if (!/^data:image\/(png|jpeg);base64,[A-Za-z0-9+\/=]+$/.test(a) || a.length > 49000) throw erro_("Assinatura inválida. Assine de novo.");
+  setCfg_("assinatura_dannis", a);
+  return {ok:true};
+}
+
+/* botão verde: a Danni's assina o contrato e a família recebe a cópia (WhatsApp pelo celular de quem tocou; e-mail aqui, se tiver) */
+function assinarDannis_(req){
+  const r = porId_(req.id); if (!r) throw erro_("Cadastro não encontrado.");
+  if (!cfg_("assinatura_dannis")) throw erro_("Crie a sua assinatura primeiro (quadro 'Minha assinatura').");
+  if (!r.obj.assinatura) throw erro_("A família ainda não assinou.");
+  if (!(Number(r.obj.mensalidade) > 0)) throw erro_("Coloque o valor antes de assinar.");
+  const mud = {assinado_dannis_em: r.obj.assinado_dannis_em || agora_()};
+  if (r.obj.status === STATUS.AGUARDANDO || r.obj.status === STATUS.LIBERADO) mud.status = STATUS.ASSINADO;
+  if (!r.obj.liberado_em) mud.liberado_em = agora_();
+  atualiza_(r.linha, mud);
+  let email = false;
+  if (r.obj.email && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(r.obj.email)){
+    try {
+      const link = `${SITE}contrato?${r.obj.token}`, nome = String(r.obj.responsavel).split(" ")[0];
+      MailApp.sendEmail({to: r.obj.email, name: "Danni's Tur", subject: "Seu contrato Danni's Tur 2027 assinado",
+        body: `Olá, ${nome}!\n\nSeu contrato do transporte escolar 2027 está assinado pela família e pela Danni's Tur.\nVeja, salve ou imprima a sua cópia: ${link}\n\nSeja bem-vindo à família Danni's! 🚐💜`,
+        htmlBody: `<p>Olá, ${nome}!</p><p>Seu contrato do transporte escolar 2027 está assinado pela família e pela Danni's Tur.</p><p><a href="${link}">Ver, salvar ou imprimir a sua cópia</a></p><p>Seja bem-vindo à família Danni's! 🚐💜</p>`});
+      email = true;
+    } catch(e){}
+  }
+  return {ok:true, email, familia: completo_(porId_(req.id).obj)};
 }
 
 function salvar_(req){
@@ -224,6 +258,22 @@ function aba_(){
   }
   return sh;
 }
+/* configurações guardadas numa aba "Config" (a assinatura é grande demais pras propriedades do script) */
+function cfgAba_(){
+  const ss = planilha_(); let sh = ss.getSheetByName("Config");
+  if (!sh){ sh = ss.insertSheet("Config"); sh.getRange(1,1,1,2).setValues([["chave","valor"]]).setFontWeight("bold"); sh.hideSheet(); }
+  return sh;
+}
+function cfg_(k){
+  const vals = cfgAba_().getDataRange().getValues();
+  for (let i = 1; i < vals.length; i++) if (vals[i][0] === k) return String(vals[i][1] || "");
+  return "";
+}
+function setCfg_(k, v){
+  const sh = cfgAba_(), vals = sh.getDataRange().getValues();
+  for (let i = 1; i < vals.length; i++) if (vals[i][0] === k){ sh.getRange(i+1, 2).setValue(v); return; }
+  sh.appendRow([k, v]);
+}
 function pasta_(){
   const nome = "Danni's Tur – Contratos assinados";
   const it = DriveApp.getFoldersByName(nome);
@@ -272,7 +322,7 @@ function publico_(o){
     valores:{ini:o.inicio_idx, mensalidade:o.mensalidade, parcelas:o.parcelas, total:o.total, dataContrato:String(o.data_contrato||"").slice(0,10)}
   };
 }
-function completo_(o){ const f = publico_(o); f.token = o.token; f.criadoEm = o.criado_em; f.liberadoEm = o.liberado_em; f.assinadoEm = o.assinado_em; f.arquivo = o.arquivo_url; f.obsInterna = o.observacao_interna; return f; }
+function completo_(o){ const f = publico_(o); f.token = o.token; f.criadoEm = o.criado_em; f.liberadoEm = o.liberado_em; f.assinadoEm = o.assinado_em; f.arquivo = o.arquivo_url; f.obsInterna = o.observacao_interna; f.assinadoDannisEm = o.assinado_dannis_em || ""; return f; }
 function limpa_(v, max){ return String(v == null ? "" : v).replace(/[\u0000-\u001f]/g," ").trim().slice(0, max||200); }
 function brl_(n){ return Number(n).toFixed(2).replace(".", ",").replace(/\B(?=(\d{3})+(?!\d))/g, "."); }
 function fmt_(iso){ return iso ? String(iso).split("-").reverse().join("/") : ""; }

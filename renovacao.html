@@ -140,14 +140,15 @@
       <section id="e4" class="sucesso" hidden style="display:grid;gap:18px">
         <div class="boas-vindas" aria-hidden="true">🚐💜</div>
         <h3>Seja bem-vindo à família Danni's!!!</h3>
-        <p id="sucTxt">Recebemos o seu contrato assinado. Obrigado pela confiança!</p>
+        <p id="sucTxt">Recebemos o seu contrato assinado. Logo você recebe a sua cópia no WhatsApp ou no e-mail. Obrigado pela confiança!</p>
         <a class="btn btn-pri" id="linkContrato" href="#" hidden>Ver meu contrato</a>
         <a class="btn btn-zap" id="zap" href="#" target="_blank" rel="noopener" hidden>Enviar confirmação no WhatsApp</a>
         <div class="box-assina">
           <h4>Próximos passos</h4>
           <ol class="passos">
             <li><span>A Danni's Tur já recebeu o seu contrato assinado. Não precisa mandar mais nada.</span></li>
-            <li><span>Toque em <b>Ver meu contrato</b> pra salvar o PDF ou imprimir a sua cópia quando quiser.</span></li>
+            <li><span>Logo a Danni's Tur assina também e você recebe a <b>sua cópia</b> no <b>WhatsApp</b> (e no <b>e-mail</b>, se você informou).</span></li>
+            <li><span>Quando quiser, toque em <b>Ver meu contrato</b> pra salvar o PDF ou imprimir.</span></li>
           </ol>
         </div>
         <button class="btn btn-link" type="button" id="novo">Fazer outra renovação</button>
@@ -176,7 +177,7 @@
 
 <div id="printArea"><p style="font:16px Arial;padding:40px;text-align:center">O contrato só pode ser impresso depois que a Danni's Tur liberar, pelo link do seu contrato.</p></div>
 
-<script src="comum.js?v=5"></script>
+<script src="comum.js?v=6"></script>
 <script>
 (function(){
   const $ = s => document.querySelector(s);
@@ -201,7 +202,7 @@
     $(".titulo-sec p").textContent = "Preencha os dados do aluno, coloque o valor combinado no WhatsApp e assine com o dedo. Pronto, o contrato já sai assinado.";
     $("#aceite").parentElement.lastChild.textContent = " Li a prévia do contrato, quero contratar o transporte escolar da Danni's Tur para 2027 e autorizo o uso destes dados para o contrato.";
     $("#confirmar").textContent = TX.fim;
-    $("#sucTxt").textContent = "Recebemos o seu contrato assinado. Obrigado pela confiança!";
+    $("#sucTxt").textContent = "Recebemos o seu contrato assinado. Logo você recebe a sua cópia no WhatsApp ou no e-mail. Obrigado pela confiança!";
     $("#novo").textContent = TX.outro;
   }
 
@@ -415,7 +416,7 @@
         const link = DT.linkContrato(r.token);
         ls.set("dt-contrato", link);
         $("#linkContrato").href = link; $("#linkContrato").hidden = false;
-        $("#sucTxt").textContent = "Recebemos o seu contrato assinado. Obrigado pela confiança!";   // a Danni's Tur recebe o aviso no WhatsApp pelo servidor
+        $("#sucTxt").textContent = "Recebemos o seu contrato assinado. Logo você recebe a sua cópia no WhatsApp ou no e-mail. Obrigado pela confiança!";   // a Danni's Tur recebe o aviso no WhatsApp pelo servidor
         mostrar(4);
       }catch(e){
         $("#e3Err").textContent = "Não consegui enviar agora. Confira a internet e toque de novo em Assinar e enviar.";

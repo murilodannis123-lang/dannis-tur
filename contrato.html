@@ -82,7 +82,7 @@ input[type=file]{width:100%;font-size:14px}
 
 <div id="printArea"><p style="font:16px Arial;padding:40px;text-align:center">Este contrato ainda não foi liberado para impressão pela Danni's Tur.</p></div>
 
-<script src="comum.js?v=5"></script>
+<script src="comum.js?v=6"></script>
 <script>
 (function(){
   const $ = s => document.querySelector(s);
@@ -112,9 +112,12 @@ input[type=file]{width:100%;font-size:14px}
       ? "<b>Seu contrato já está assinado.</b><span>Falta só a Danni's Tur colocar o valor. Você recebe o aviso no WhatsApp e vê o contrato completo neste mesmo link.</span>"
       : "<b>Aguardando a Danni's Tur colocar o valor.</b><span>Assim que o contrato for liberado você recebe o aviso no WhatsApp e, por este mesmo link, pode imprimir ou assinar pelo gov.br.</span>";
     $("#stAssinado").hidden = !(liberado && assinou);
+    const faltaDannis = !!fam.assinatura && !fam.assinadoDannisEm;
+    $("#stAssinado b").textContent = faltaDannis ? "Você já assinou! Falta só a Danni's Tur assinar." : "Contrato assinado pelas duas partes. Bem-vindo à família Danni's!";
+    $("#stAssinado span").textContent = faltaDannis ? "Assim que a Danni's Tur assinar, você recebe a cópia no WhatsApp (e no e-mail, se informou). Se quiser, já pode guardar esta via:" : "Guarde a sua cópia:";
     $("#stImpresso").hidden = st!=="vai_entregar_impresso";
     $("#assinar").hidden = !liberado || assinou;
-    $("#chipSt").textContent = !liberado ? (fam.assinatura ? "Assinado · aguardando valor" : "Aguardando valor") : (assinou ? "Assinado" : "Liberado pra assinar");
+    $("#chipSt").textContent = !liberado ? (fam.assinatura ? "Assinado · aguardando valor" : "Aguardando valor") : (assinou ? (fam.assinatura && !fam.assinadoDannisEm ? "Aguardando a Danni's Tur" : "Assinado") : "Liberado pra assinar");
     $("#folha").innerHTML = contratoHTML(fam, liberado ? fam.valores : {});
     $("#folhaWrap").classList.toggle("marca-dagua", !liberado);
     $("#folhaWrap").dataset.marca = "AGUARDANDO LIBERAÇÃO";
