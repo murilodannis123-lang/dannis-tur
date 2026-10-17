@@ -326,3 +326,9 @@ img.van{height:auto}
 
 .texto-historia{display:grid;gap:12px}
 .texto-historia p{margin:0;color:var(--tinta-2);max-width:62ch;font-size:16.5px;line-height:1.6}
+
+/* botãozinho de WhatsApp de cada motorista */
+.bt-zap{display:inline-flex;align-items:center;gap:6px;background:#1fa855;color:#fff;text-decoration:none;font-weight:700;font-size:14px;padding:7px 12px 7px 9px;border-radius:999px;box-shadow:0 2px 0 rgba(0,0,0,.15)}
+.bt-zap svg{width:18px;height:18px;flex:none}
+.bt-zap:hover{background:#178a45}
+.bt-zap:focus-visible{outline:3px solid var(--laranja);outline-offset:2px}

@@ -23,7 +23,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,600;0,800;1,700;1,800;1,900&family=Figtree:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="estilo.css?v=15">
+<link rel="stylesheet" href="estilo.css?v=16">
 <style>body{margin:0} main.inicio{padding-block:24px 40px} main.inicio > .wrap{display:grid;gap:26px}</style>
 </head>
 <body>
@@ -129,15 +129,17 @@
   /* frota: uma van por motorista, com a caricatura */
   const da = v => /^Tio\b/.test(v.nome) ? "do" : "da";
   const FROTA = [
-    {nome:"Tio Daniel", foto:"img/tio-daniel.jpg"},
-    {nome:"Tio Luiz",   foto:"img/tio-luiz.jpg"},
-    {nome:"Tia Joyce",  foto:"img/tia-joyce.jpg"},
-    {nome:"Tia Cíntia", foto:"img/tia-cintia.jpg"}
+    {nome:"Tio Daniel", foto:"img/tio-daniel.jpg", zap:"19997781210"},
+    {nome:"Tio Luiz",   foto:"img/tio-luiz.jpg",   zap:"19997499380"},
+    {nome:"Tia Joyce",  foto:"img/tia-joyce.jpg",  zap:"19988761202"},
+    {nome:"Tia Cíntia", foto:"img/tia-cintia.jpg", zap:"19981163312"}
   ];
+  const ICONE_ZAP = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" d="M12 2.6a9.4 9.4 0 0 0-8.1 14.2L2.7 21.3l4.6-1.2A9.4 9.4 0 1 0 12 2.6z"/><path fill="currentColor" d="M8.7 7.3c.3-.4.8-.4 1 0l1 1.7c.2.3.1.7-.1 1l-.6.6c.6 1.3 1.6 2.3 2.9 2.9l.6-.6c.3-.3.7-.3 1-.1l1.7 1c.4.2.4.7.1 1-.9.8-2.1 1.1-3.2.5-2.3-1.1-4.1-3-5.2-5.3-.5-1.1-.2-2.2.8-2.7z"/></svg>';
   $("#frota").innerHTML = FROTA.map(v => `
     <article class="frota-item">
       <img class="carica" src="${v.foto}" alt="Caricatura ${da(v)} ${esc(v.nome)} na van da Danni's" loading="lazy">
       <div><h3>Van ${da(v)} ${esc(v.nome)}</h3><small>Motorista: ${esc(v.nome)}</small></div>
+      <a class="bt-zap" href="https://wa.me/55${v.zap}?text=${encodeURIComponent("Olá, " + v.nome + "! ")}" target="_blank" rel="noopener">${ICONE_ZAP}Conversar com ${esc(v.nome)}</a>
     </article>`).join("");
 
   $("#escolas").innerHTML = ESCOLAS.map(e => `<span class="${e.clara?"clara":""}" style="--c:${e.cor}">${esc(e.nome)}</span>`).join("");
