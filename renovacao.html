@@ -36,7 +36,7 @@
     <div class="titulo-sec">
       <small>Ano letivo 2027</small>
       <h2>Renove a vaga do seu filho</h2>
-      <p>Confirme que vai continuar com a gente. A Danni's Tur coloca o valor do seu caso e te avisa no WhatsApp quando o contrato estiver pronto pra assinar.</p>
+      <p>Confirme que vai continuar com a gente: preencha os dados, coloque o valor combinado no WhatsApp e assine com o dedo. Pronto, o contrato já sai assinado.</p>
     </div>
 
     <div class="card" style="gap:22px">
@@ -93,6 +93,13 @@
         </fieldset>
 
         <fieldset>
+          <legend>Valor combinado</legend>
+          <div class="campo"><label for="rValor">Mensalidade combinada com a Danni's Tur (R$)</label>
+            <input type="text" id="rValor" inputmode="decimal" placeholder="0,00" autocomplete="off">
+            <small class="dica" id="valorDica">Coloque o valor que vocês combinaram no WhatsApp.</small></div>
+        </fieldset>
+
+        <fieldset>
           <legend>Observações <span class="opc" style="font-family:var(--f-corpo);font-size:14px;font-weight:400;color:var(--tinta-2)">(opcional)</span></legend>
           <div class="campo"><label for="obs" class="sr">Observações</label><textarea id="obs" rows="3" placeholder="Mudança de endereço, horário diferente, outro ponto de embarque…"></textarea></div>
         </fieldset>
@@ -110,11 +117,11 @@
         <dl class="resumo" id="resumo"></dl>
         <button type="button" class="ler-contrato" id="lerContrato">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2.8h8.5L19 7.3v13.9H6z" fill="#fff" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M14.3 2.8v4.6H19" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M8.6 11h7.8M8.6 13.8h7.8M8.6 16.6h4.6" stroke="#f4791f" stroke-width="1.5" stroke-linecap="round"/></svg>
-          <div><b>Ler o contrato 2027</b><span>Prévia com os seus dados e a sua assinatura. O valor entra depois, quando a Danni's Tur liberar.</span></div>
+          <div><b>Ler o contrato 2027</b><span>Prévia completa, com os seus dados, o valor combinado e a sua assinatura.</span></div>
         </button>
         <div class="quadro-ass">
           <h4>Assine aqui com o dedo</h4>
-          <p>Faça a sua assinatura no quadro, igual à do documento. O valor (cláusula 3) a Danni's Tur coloca depois e você recebe o contrato completo no mesmo link.</p>
+          <p>Faça a sua assinatura no quadro, igual à do documento.</p>
           <div class="pad-ass" id="padAss"><canvas id="cvAss" aria-label="Quadro para assinar com o dedo ou o mouse"></canvas><div class="linha-ass"></div><div class="dica-ass">assine sobre a linha</div></div>
           <button type="button" class="btn btn-link" id="limpaAss">Apagar e assinar de novo</button>
         </div>
@@ -136,8 +143,7 @@
           <h4>Próximos passos</h4>
           <ol class="passos">
             <li><span>Seu contrato assinado já foi pro WhatsApp da Danni's Tur. Se o WhatsApp não abriu sozinho, toque no botão verde aqui em cima.</span></li>
-            <li><span>A Danni's Tur coloca o valor e te avisa no WhatsApp.</span></li>
-            <li><span>Pelo mesmo link você vê o contrato completo e pode salvar ou imprimir a sua cópia.</span></li>
+            <li><span>Pelo link do contrato você pode salvar o PDF ou imprimir a sua cópia quando quiser.</span></li>
           </ol>
         </div>
         <button class="btn btn-link" type="button" id="novo">Fazer outra renovação</button>
@@ -188,7 +194,7 @@
     document.title = "Danni's Tur · Contrato novo 2027";
     document.body.classList.add("modo-novo");
     $(".titulo-sec h2").textContent = "Contrate a van pro seu filho";
-    $(".titulo-sec p").textContent = "Preencha os dados do aluno. A Danni's Tur coloca o valor do seu caso e te avisa no WhatsApp quando o contrato estiver pronto pra assinar.";
+    $(".titulo-sec p").textContent = "Preencha os dados do aluno, coloque o valor combinado no WhatsApp e assine com o dedo. Pronto, o contrato já sai assinado.";
     $("#aceite").parentElement.lastChild.textContent = " Li a prévia do contrato, quero contratar o transporte escolar da Danni's Tur para 2027 e autorizo o uso destes dados para o contrato.";
     $("#confirmar").textContent = TX.fim;
     $("#e4 h3").textContent = "Bem-vindo à Danni's Tur!";
@@ -289,6 +295,8 @@
     req($("#rBairro"), !!$("#rBairro").value.trim());
     req($("#rCep"), $("#rCep").value.replace(/\D/g,"").length===8);
     req($("#rCidade"), !!$("#rCidade").value.trim());
+    const mens = DT.num($("#rValor").value); req($("#rValor"), mens >= 50 && mens <= 20000);
+    if (!(mens >= 50 && mens <= 20000) && $("#rValor").value) motivo = "Confira o valor da mensalidade.";
     const alunos = [];
     document.querySelectorAll("#alunos .aluno").forEach(c=>{
       const nome=c.querySelector(".a-nome"), nasc=c.querySelector(".a-nasc"), es=c.querySelector(".a-escola"), outra=c.querySelector(".a-outra");
@@ -307,6 +315,8 @@
       rua:$("#rEnd").value.trim(), bairro:$("#rBairro").value.trim(), cidade:$("#rCidade").value.trim(), cep:$("#rCep").value,
       alunos, obs:$("#obs").value.trim(), dataCadastro:hojeISO()
     };
+    const vg = DT.vigencia(dados.dataCadastro);
+    dados.valores = {ini:vg.ini, mensalidade:mens, parcelas:vg.meses, total:Math.round(mens*vg.meses*100)/100, dataContrato:hojeISO()};
     resumo(); $("#aceite").checked=false; $("#confirmar").disabled=true; assina.ajusta(); $("#e3Err").textContent=""; mostrar(3);
   });
   document.addEventListener("input", e=>{ if (e.target.closest("#e2")) marca(e.target, true); });
@@ -318,9 +328,17 @@
     if (dados.email) L.push(["E-mail", dados.email]);
     L.push(["Endereço", `${dados.rua} – ${dados.bairro} – ${dados.cidade} – CEP ${dados.cep}`]);
     dados.alunos.forEach((a,i)=>L.push([dados.alunos.length>1?`Aluno ${i+1}`:"Aluno", `${a.nome} · nasc. ${fmtData(a.nasc)}\n${a.escola} · ${a.periodo} · ${a.trajeto}`]));
+    L.push(["Valor", `R$ ${DT.brl(dados.valores.mensalidade)} por mês · ${dados.valores.parcelas} parcelas (${DT.vigencia(dados.dataCadastro).de} a ${DT.vigencia(dados.dataCadastro).ate}) · total R$ ${DT.brl(dados.valores.total)}`]);
     if (dados.obs) L.push(["Observações", dados.obs]);
     $("#resumo").innerHTML = L.map(([k,v])=>`<div><dt>${k}</dt><dd>${esc(v).replace(/\n/g,"<br>")}</dd></div>`).join("");
   }
+  /* valor: máscara 1.234,56 e conta do total */
+  $("#rValor").addEventListener("input", e=>{
+    const d = e.target.value.replace(/\D/g,"").slice(0,7);
+    e.target.value = d ? (Number(d)/100).toLocaleString("pt-BR",{minimumFractionDigits:2}) : "";
+    const v = DT.num(e.target.value), vg = DT.vigencia(hojeISO());
+    $("#valorDica").textContent = v ? `${vg.meses} parcelas de R$ ${DT.brl(v)} (${vg.de} a ${vg.ate}) = total R$ ${DT.brl(v*vg.meses)}` : "Coloque o valor que vocês combinaram no WhatsApp.";
+  });
   const podeEnviar = () => $("#confirmar").disabled = !($("#aceite").checked && assina.feita());
   $("#aceite").onchange = podeEnviar;
 
@@ -366,7 +384,7 @@
 
   /* ---------- prévia do contrato (sem valor, sem impressão) ---------- */
   const dlg = $("#dlg");
-  function abrirPrevia(){ $("#dlgCorpo").innerHTML = contratoHTML({...dados, assinatura: assina.feita() ? assina.imagem() : ""}, {}); dlg.showModal ? dlg.showModal() : dlg.setAttribute("open",""); dlg.scrollTop=0; }
+  function abrirPrevia(){ $("#dlgCorpo").innerHTML = contratoHTML({...dados, assinatura: assina.feita() ? assina.imagem() : ""}, dados.valores); dlg.showModal ? dlg.showModal() : dlg.setAttribute("open",""); dlg.scrollTop=0; }
   $("#lerContrato").onclick = abrirPrevia;
   $("#fecharDlg").onclick = ()=>dlg.close ? dlg.close() : dlg.removeAttribute("open");
 
@@ -392,7 +410,7 @@
         const link = DT.linkContrato(r.token);
         ls.set("dt-contrato", link);
         $("#linkContrato").href = link; $("#linkContrato").hidden = false;
-        $("#sucTxt").textContent = TX.sucesso + " Seu contrato assinado está indo pro WhatsApp da Danni's Tur. Guarde o link: é por ele que você vê o contrato completo depois que o valor for colocado.";
+        $("#sucTxt").textContent = TX.sucesso + " Seu contrato assinado está indo pro WhatsApp da Danni's Tur. Guarde o link: é por ele que você salva ou imprime a sua cópia.";
         const zap = zapLink(ZAP_DANNIS, TX.zap(dados) + new URL(link, location.href).href);
         $("#zap").href = zap; $("#zap").textContent = "Enviar contrato assinado no WhatsApp"; $("#zap").hidden = false;
         mostrar(4);

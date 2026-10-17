@@ -63,8 +63,15 @@ function cadastrar_(d){
       tipo: d.tipo === "novo" ? "novo" : "renovacao",
       assinatura: ass, assinado_em: agora_(), assinatura_info: "Assinado na tela pelo responsável · " + limpa_(d.aparelho, 160)
     };
+    // valor combinado no WhatsApp, digitado pela família: contrato já nasce completo e assinado
+    const v = d.valores || {}, mens = Number(v.mensalidade), parc = Math.round(Number(v.parcelas)), ini = Math.round(Number(v.ini));
+    const temValor = mens >= 50 && mens <= 20000 && parc >= 1 && parc <= 12 && ini > 24000;
+    if (temValor){
+      Object.assign(linha, {inicio_idx: ini, mensalidade: mens, parcelas: parc, total: Math.round(mens * parc * 100) / 100,
+                            data_contrato: hoje_(), liberado_em: agora_(), status: STATUS.ASSINADO});
+    }
     sh.appendRow(COLS.map(c => linha[c] == null ? "" : linha[c]));
-    avisaDono_(`${linha.tipo === "novo" ? "🆕 *Contrato novo 2027*" : "🚐 *Nova renovação 2027*"} (nº ${id}) ✍️ já assinado\n${linha.responsavel} – ${linha.celular}\n${alunos.map(a=>`• ${a.nome} – ${a.escola}`).join("\n")}\n\n📄 Contrato: ${SITE}contrato?${token}\n👉 Colocar o valor e liberar:\n${SITE}admin.html#f=${id}`);
+    avisaDono_(`${linha.tipo === "novo" ? "🆕 *Contrato novo 2027*" : "🚐 *Nova renovação 2027*"} (nº ${id}) ✍️ já assinado\n${linha.responsavel} – ${linha.celular}\n${temValor ? `💰 R$ ${brl_(linha.mensalidade)}/mês × ${linha.parcelas} = R$ ${brl_(linha.total)}\n` : "💰 Sem valor – colocar no admin\n"}${alunos.map(a=>`• ${a.nome} – ${a.escola}`).join("\n")}\n\n📄 Contrato: ${SITE}contrato?${token}\n👉 ${temValor ? "Conferir / corrigir valor" : "Colocar o valor e liberar"}:\n${SITE}admin.html#f=${id}`);
     return {ok:true, token, id};
   } finally { lock.releaseLock(); }
 }
@@ -261,6 +268,7 @@ function publico_(o){
 }
 function completo_(o){ const f = publico_(o); f.token = o.token; f.criadoEm = o.criado_em; f.liberadoEm = o.liberado_em; f.assinadoEm = o.assinado_em; f.arquivo = o.arquivo_url; f.obsInterna = o.observacao_interna; return f; }
 function limpa_(v, max){ return String(v == null ? "" : v).replace(/[\u0000-\u001f]/g," ").trim().slice(0, max||200); }
+function brl_(n){ return Number(n).toFixed(2).replace(".", ",").replace(/\B(?=(\d{3})+(?!\d))/g, "."); }
 function fmt_(iso){ return iso ? String(iso).split("-").reverse().join("/") : ""; }
 function agora_(){ return Utilities.formatDate(new Date(), FUSO, "yyyy-MM-dd'T'HH:mm:ss"); }
 function hoje_(){ return Utilities.formatDate(new Date(), FUSO, "yyyy-MM-dd"); }
