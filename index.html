@@ -321,13 +321,16 @@
     let pedido = null;
     window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); pedido = e; bt.hidden = false; });
     window.addEventListener("appinstalled", () => { bt.hidden = true; dica.hidden = true; });
-    if (ios || /android/i.test(navigator.userAgent)) bt.hidden = false;
+    const android = /android/i.test(navigator.userAgent);
+    bt.hidden = false;   // sempre à mostra (some só quando já está instalado)
     bt.onclick = async () => {
       if (pedido){ pedido.prompt(); try { await pedido.userChoice; } catch(e){} pedido = null; return; }
       dica.hidden = !dica.hidden;
       dica.innerHTML = ios
         ? "<b>No iPhone:</b> toque em <b>Compartilhar</b> (o quadrado com a setinha pra cima, embaixo no Safari) › <b>Adicionar à Tela de Início</b> › <b>Adicionar</b>."
-        : "<b>No Android:</b> toque nos <b>3 pontinhos</b> do navegador (em cima, à direita) › <b>Instalar app</b> ou <b>Adicionar à tela inicial</b>.";
+        : android
+        ? "<b>No Android:</b> toque nos <b>3 pontinhos</b> do navegador (em cima, à direita) › <b>Instalar app</b> ou <b>Adicionar à tela inicial</b>."
+        : "<b>No computador (Chrome ou Edge):</b> clique no ícone de instalar na barra de endereço (uma telinha com setinha, à direita) ou nos <b>3 pontinhos</b> › <b>Transmitir, salvar e compartilhar</b> › <b>Instalar página como app</b>.";
     };
   })();
 
