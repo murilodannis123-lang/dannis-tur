@@ -196,6 +196,13 @@ function configurar(){
   return "Pronto. Agora troque a senha em Configurações do projeto › Propriedades do script.";
 }
 
+/* apaga TODAS as famílias da planilha (fica só o cabeçalho). Rodar à mão no editor, só pra zerar testes. */
+function zerarTestes(){
+  const sh = aba_(), n = sh.getLastRow();
+  if (n > 1) sh.deleteRows(2, n - 1);
+  return "Planilha zerada: " + Math.max(0, n - 1) + " linha(s) de teste apagada(s).";
+}
+
 /* ===================== utilidades ===================== */
 function aba_(){
   const sh = planilha_().getSheetByName(ABA); if (!sh) throw erro_("Rode configurar() primeiro.");
