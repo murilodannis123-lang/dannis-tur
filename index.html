@@ -23,7 +23,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,600;0,800;1,700;1,800;1,900&family=Figtree:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="estilo.css?v=19">
+<link rel="stylesheet" href="estilo.css?v=20">
 <style>body{margin:0} main.inicio{padding-block:24px 40px} main.inicio > .wrap{display:grid;gap:26px}</style>
 </head>
 <body>
@@ -65,7 +65,7 @@
     <div class="abas" role="tablist" aria-label="Sobre a Danni's Tur">
       <button type="button" role="tab" id="tab-historia" aria-controls="p-historia" aria-selected="true">Nossa história</button>
       <button type="button" role="tab" id="tab-frota" aria-controls="p-frota" aria-selected="false" tabindex="-1">Frota</button>
-      <button type="button" role="tab" id="tab-escolas" aria-controls="p-escolas" aria-selected="false" tabindex="-1">Escolas</button>
+      <button type="button" role="tab" id="tab-galeria" aria-controls="p-galeria" aria-selected="false" tabindex="-1">Galeria</button>
     </div>
 
     <section class="painel" id="p-historia" role="tabpanel" aria-labelledby="tab-historia">
@@ -89,11 +89,18 @@
       <figure class="foto-frota"><img src="img/frota.jpg" alt="Vans da Danni's Tur estacionadas lado a lado" width="960" height="539" loading="lazy"></figure>
     </section>
 
-    <section class="painel" id="p-escolas" role="tabpanel" aria-labelledby="tab-escolas" hidden>
-      <h2>Escolas que <em>atendemos</em></h2>
-      <div class="lista-escolas" id="escolas"></div>
-      <p>Sua escola não está na lista? Chama a gente no WhatsApp que a gente vê.</p>
+    <section class="painel" id="p-galeria" role="tabpanel" aria-labelledby="tab-galeria" hidden>
+      <h2>Nossa <em>galeria</em></h2>
+      <div class="galeria" id="galeria"></div>
     </section>
+
+    <dialog class="lightbox" id="lightbox" aria-label="Foto ampliada">
+      <img id="lbImg" alt="">
+      <button type="button" class="lb-bt lb-fecha" id="lbFecha" aria-label="Fechar">✕</button>
+      <button type="button" class="lb-bt lb-ant" id="lbAnt" aria-label="Foto anterior">‹</button>
+      <button type="button" class="lb-bt lb-prox" id="lbProx" aria-label="Próxima foto">›</button>
+      <span class="lb-cont" id="lbCont"></span>
+    </dialog>
 
     <section class="contato">
       <h2>Fale com a Danni's Tur</h2>
@@ -142,7 +149,37 @@
       <a class="bt-zap" href="https://wa.me/55${v.zap}?text=${encodeURIComponent("Olá, " + v.nome + "! ")}" target="_blank" rel="noopener">${ICONE_ZAP}Conversar com ${esc(v.nome)}</a>
     </article>`).join("");
 
-  $("#escolas").innerHTML = ESCOLAS.map(e => `<span class="${e.clara?"clara":""}" style="--c:${e.cor}">${esc(e.nome)}</span>`).join("");
+  /* galeria: as fotos só baixam quando a aba é aberta; tocar amplia (arrasta pro lado pra passar) */
+  const GALERIA = [
+    {f:"foto5", alt:"Equipe da Danni's Tur entre duas vans da empresa numa estrada de terra"},
+    {f:"foto4", alt:"Motoristas da Danni's Tur com moletons pretos DANNI'S na frente de uma van escolar"},
+    {f:"foto3", alt:"Tio Daniel e colegas de uniforme lilás da Danni's tomando café"},
+    {f:"foto2", alt:"Tio Daniel de uniforme da Danni's com amigos num evento"},
+    {f:"foto1", alt:"Tio Daniel de uniforme da Danni's num evento em Sumaré"}
+  ];
+  const galeria = (function(){
+    let carregada = false, i = 0;
+    const dlg = $("#lightbox"), img = $("#lbImg");
+    function carrega(){
+      if (carregada) return; carregada = true;
+      $("#galeria").innerHTML = GALERIA.map((g, k) => `<button type="button" class="g-item" data-k="${k}" aria-label="Ampliar foto ${k + 1}"><img src="img/galeria/${g.f}-p.jpg" alt="${esc(g.alt)}" width="420" height="420" decoding="async"></button>`).join("");
+      $("#galeria").querySelectorAll(".g-item").forEach(b => b.onclick = () => abre(+b.dataset.k));
+    }
+    function mostra(k){
+      i = (k + GALERIA.length) % GALERIA.length; const g = GALERIA[i];
+      img.src = `img/galeria/${g.f}.jpg`; img.alt = g.alt; $("#lbCont").textContent = `${i + 1} / ${GALERIA.length}`;
+      new Image().src = `img/galeria/${GALERIA[(i + 1) % GALERIA.length].f}.jpg`;   // já adianta a próxima
+    }
+    function abre(k){ mostra(k); dlg.showModal ? dlg.showModal() : dlg.setAttribute("open", ""); }
+    const fecha = () => dlg.close ? dlg.close() : dlg.removeAttribute("open");
+    $("#lbFecha").onclick = fecha; $("#lbAnt").onclick = () => mostra(i - 1); $("#lbProx").onclick = () => mostra(i + 1);
+    dlg.addEventListener("click", e => { if (e.target === dlg) fecha(); });
+    dlg.addEventListener("keydown", e => { if (e.key === "ArrowRight") mostra(i + 1); if (e.key === "ArrowLeft") mostra(i - 1); });
+    let x0 = null;
+    img.addEventListener("pointerdown", e => { x0 = e.clientX; });
+    img.addEventListener("pointerup", e => { if (x0 === null) return; const dx = e.clientX - x0; x0 = null; if (Math.abs(dx) > 40) mostra(i + (dx < 0 ? 1 : -1)); });
+    return {carrega};
+  })();
 
   /* ---------- van na estrada: vem, freia (com som), espera e sai bem devagar ---------- */
   (async function vanNaEstrada(){
@@ -293,6 +330,7 @@
       t.setAttribute("aria-selected", on); t.tabIndex = on ? 0 : -1;
       document.getElementById(t.getAttribute("aria-controls")).hidden = !on;
     });
+    if (tab.id === "tab-galeria") galeria.carrega();
     if (foco) tab.focus();
     history.replaceState(null, "", "#" + tab.id.replace("tab-",""));
   }
