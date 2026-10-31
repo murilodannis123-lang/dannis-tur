@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Danni's Tur · endereço novo</title>
+<meta name="robots" content="noindex">
+<script>
+  // o app mudou pra dannistur.github.io: leva a pessoa pra mesma página no endereço novo
+  (function(){
+    var p = location.pathname.replace(/^\/dannis-tur/, "") || "/";
+    location.replace("https://dannistur.github.io" + p + location.search + location.hash);
+  })();
+</script>
+<meta http-equiv="refresh" content="0; url=https://dannistur.github.io/">
+</head><body style="font-family:system-ui,sans-serif;text-align:center;padding:40px">
+<p>O app da Danni's Tur mudou de endereço.</p>
+<p><a href="https://dannistur.github.io/">Abrir dannistur.github.io</a></p>
+</body></html>
